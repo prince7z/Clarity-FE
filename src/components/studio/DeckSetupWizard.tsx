@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStudio } from './StudioContext';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -65,6 +66,7 @@ interface UploadedFile {
     name: string;
     size: number;
     type: string;
+    file?: File; // Actual file object for upload
 }
 
 function UploadZone({
@@ -77,16 +79,22 @@ function UploadZone({
     onFileDrop: (file: UploadedFile) => void;
 }) {
     const [isDragOver, setIsDragOver] = useState(false);
+    const fileInputRef = useCallback((input: HTMLInputElement | null) => {
+        if (input) {
+            input.onclick = () => input.value = ''; // Reset to allow same file selection
+        }
+    }, []);
 
     const handleDrop = useCallback((e: React.DragEvent) => {
         e.preventDefault();
         setIsDragOver(false);
         const droppedFile = e.dataTransfer.files[0];
-        if (droppedFile) {
+        if (droppedFile && (droppedFile.type.includes('presentation') || droppedFile.type === 'application/pdf')) {
             onFileDrop({
                 name: droppedFile.name,
                 size: droppedFile.size,
                 type: droppedFile.type,
+                file: droppedFile,
             });
         }
     }, [onFileDrop]);
@@ -98,13 +106,20 @@ function UploadZone({
 
     const handleDragLeave = () => setIsDragOver(false);
 
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = e.target.files?.[0];
+        if (selectedFile) {
+            onFileDrop({
+                name: selectedFile.name,
+                size: selectedFile.size,
+                type: selectedFile.type,
+                file: selectedFile,
+            });
+        }
+    };
+
     const handleClick = () => {
-        // Simulate file selection
-        onFileDrop({
-            name: `Reference_Deck_${index + 1}.pptx`,
-            size: 2048000,
-            type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-        });
+        document.getElementById(`file-input-${index}`)?.click();
     };
 
     if (file) {
@@ -130,26 +145,36 @@ function UploadZone({
     }
 
     return (
-        <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleClick}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            className={`aspect-square rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-300 flex flex-col items-center justify-center p-4 ${isDragOver
-                    ? 'border-primary bg-primary/10 scale-105'
-                    : 'border-muted-foreground/20 hover:border-primary/50 bg-muted/30 hover:bg-muted/50'
-                }`}
-        >
-            <Upload className={`w-8 h-8 mb-2 transition-colors ${isDragOver ? 'text-primary' : 'text-muted-foreground/50'}`} />
-            <p className="text-sm text-muted-foreground text-center">Drop Zone {index + 1}</p>
-            <p className="text-xs text-muted-foreground/60 mt-1">Click or drag</p>
-        </motion.div>
+        <>
+            <input
+                id={`file-input-${index}`}
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileSelect}
+                accept=".pptx,.pdf,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/pdf"
+                className="hidden"
+            />
+            <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleClick}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                className={`aspect-square rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-300 flex flex-col items-center justify-center p-4 ${isDragOver
+                        ? 'border-primary bg-primary/10 scale-105'
+                        : 'border-muted-foreground/20 hover:border-primary/50 bg-muted/30 hover:bg-muted/50'
+                    }`}
+            >
+                <Upload className={`w-8 h-8 mb-2 transition-colors ${isDragOver ? 'text-primary' : 'text-muted-foreground/50'}`} />
+                <p className="text-sm text-muted-foreground text-center">Drop Zone {index + 1}</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">Click or drag</p>
+            </motion.div>
+        </>
     );
 }
 
-function Step1Upload() {
+function Step1Upload({ onFilesChange }: { onFilesChange?: (files: (UploadedFile | null)[]) => void }) {
     const { uploadedFiles, setUploadedFiles } = useStudio();
     const [files, setFiles] = useState<(UploadedFile | null)[]>([null, null, null]);
 
@@ -157,6 +182,7 @@ function Step1Upload() {
         const newFiles = [...files];
         newFiles[index] = file;
         setFiles(newFiles);
+        onFilesChange?.(newFiles);
     };
 
     const hasFiles = files.some(f => f !== null);
@@ -341,25 +367,52 @@ function Step2AnalyzeStyle() {
     );
 }
 
-function Step3Content() {
+function Step3Content({ onDataChange }: { onDataChange?: (data: any) => void }) {
     const { deckContent, setDeckContent } = useStudio();
     const [selectedAudience, setSelectedAudience] = useState('lp-investor');
     const [briefText, setBriefText] = useState('');
     const [selectedResearch, setSelectedResearch] = useState<string[]>([]);
     const [financialFiles, setFinancialFiles] = useState<UploadedFile[]>([]);
 
-    const toggleResearch = (id: string) => {
-        setSelectedResearch(prev =>
-            prev.includes(id) ? prev.filter(r => r !== id) : [...prev, id]
-        );
+    // Notify parent of data changes
+    const updateParent = () => {
+        onDataChange?.({
+            audience: selectedAudience,
+            brief: briefText,
+            research: selectedResearch,
+            financialFiles: financialFiles
+        });
     };
 
-    const handleAddFinancialFile = () => {
-        setFinancialFiles([...financialFiles, {
-            name: `Financial_Data_${financialFiles.length + 1}.xlsx`,
-            size: 1024000,
-            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        }]);
+    const toggleResearch = (id: string) => {
+        setSelectedResearch(prev => {
+            const newResearch = prev.includes(id) ? prev.filter(r => r !== id) : [...prev, id];
+            setTimeout(() => updateParent(), 0);
+            return newResearch;
+        });
+    };
+
+    const handleAddFinancialFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFiles = e.target.files;
+        if (selectedFiles && selectedFiles.length > 0) {
+            const newFiles = [...financialFiles];
+            Array.from(selectedFiles).forEach(file => {
+                newFiles.push({
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    file: file,
+                });
+            });
+            setFinancialFiles(newFiles);
+            setTimeout(() => updateParent(), 0);
+        }
+    };
+
+    const handleRemoveFinancialFile = (index: number) => {
+        const newFiles = financialFiles.filter((_, i) => i !== index);
+        setFinancialFiles(newFiles);
+        setTimeout(() => updateParent(), 0);
     };
 
     return (
@@ -390,7 +443,10 @@ function Step3Content() {
                                 key={audience.id}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
-                                onClick={() => setSelectedAudience(audience.id)}
+                                onClick={() => {
+                                    setSelectedAudience(audience.id);
+                                    setTimeout(() => updateParent(), 0);
+                                }}
                                 className={`p-4 rounded-xl border-2 transition-all duration-200 ${isSelected
                                         ? 'border-primary bg-primary/5'
                                         : 'border-border hover:border-primary/30'
@@ -414,8 +470,16 @@ function Step3Content() {
                         <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">1</span>
                         UPLOAD FINANCIAL DATA
                     </Label>
+                    <input
+                        id="financial-files-input"
+                        type="file"
+                        onChange={handleAddFinancialFile}
+                        accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+                        multiple
+                        className="hidden"
+                    />
                     <div
-                        onClick={handleAddFinancialFile}
+                        onClick={() => document.getElementById('financial-files-input')?.click()}
                         className="border-2 border-dashed border-muted-foreground/20 rounded-xl p-6 cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-all duration-200"
                     >
                         <div className="flex items-center justify-center gap-4">
@@ -432,11 +496,17 @@ function Step3Content() {
                                 <Badge key={index} variant="secondary" className="gap-2 py-1.5">
                                     <FileSpreadsheet className="w-3 h-3" />
                                     {file.name}
-                                    <X className="w-3 h-3 cursor-pointer hover:text-destructive" />
+                                    <X 
+                                        className="w-3 h-3 cursor-pointer hover:text-destructive" 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRemoveFinancialFile(index);
+                                        }}
+                                    />
                                 </Badge>
                             ))}
                             <Badge className="bg-emerald-500/10 text-emerald-600 border-0">
-                                ✓ Detected: Revenue projections, EBITDA margins
+                                ✓ {financialFiles.length} file(s) uploaded
                             </Badge>
                         </div>
                     )}
@@ -455,7 +525,10 @@ function Step3Content() {
 - Financial projections (5 years)
 - Investment ask: $50M Series C'
                         value={briefText}
-                        onChange={(e) => setBriefText(e.target.value)}
+                        onChange={(e) => {
+                            setBriefText(e.target.value);
+                            setTimeout(() => updateParent(), 0);
+                        }}
                         className="min-h-[140px] bg-background/50"
                     />
                 </div>
@@ -495,7 +568,7 @@ function Step3Content() {
     );
 }
 
-function Step4Preview() {
+function Step4Preview({ wizardData }: { wizardData?: any }) {
     const [selectedBuild, setSelectedBuild] = useState('standard');
     const [isBuilding, setIsBuilding] = useState(false);
     const { setCurrentView, setCurrentDeck } = useStudio();
@@ -513,14 +586,59 @@ function Step4Preview() {
         { num: 10, title: 'APPENDIX' },
     ];
 
-    const handleStartBuilding = () => {
+    const handleStartBuilding = async () => {
         setIsBuilding(true);
 
-        // Simulate building process
-        setTimeout(() => {
-            setCurrentDeck({
-                id: 'new-deck',
-                name: 'CloudScale Investment Deck',
+        try {
+            // Prepare FormData
+            const formData = new FormData();
+            
+            // Add form fields from collected data
+            formData.append('Company Name', wizardData?.companyName || 'Not provided');
+            formData.append('Presentation Type', wizardData?.presentationType || 'board presentation');
+            formData.append('Target Audience', wizardData?.content?.audience || 'lp-investor');
+            formData.append('Investment Thesis / Key Message', wizardData?.content?.brief || '');
+            
+            // Add research requirements (comma-separated)
+            const researchRequirements = wizardData?.content?.research?.join(', ') || '';
+            formData.append('Research Requirements', researchRequirements);
+            
+            // Append actual reference presentation files
+            if (wizardData?.referenceFiles) {
+                wizardData.referenceFiles.forEach((fileData: UploadedFile | null, index: number) => {
+                    if (fileData?.file) {
+                        formData.append('Reference Presentations (Upload 2-3 for Deck DNA)', fileData.file, fileData.name);
+                    }
+                });
+            }
+            
+            // Append actual financial files
+            if (wizardData?.content?.financialFiles) {
+                wizardData.content.financialFiles.forEach((fileData: UploadedFile, index: number) => {
+                    if (fileData.file) {
+                        formData.append('Financial Data / Excel Files', fileData.file, fileData.name);
+                    }
+                });
+            }
+
+            // Send axios request
+            const response = await axios.post(
+                'https://n8n.srv1291751.hstgr.cloud/form-test/9bec0b3f-a9fa-407e-87e5-0533a8524ea5',
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }
+            );
+
+            console.log('Response:', response.data);
+            
+            // Simulate building process after successful upload
+            setTimeout(() => {
+                setCurrentDeck({
+                    id: 'new-deck',
+                    name: 'CloudScale Investment Deck',
                 style: {
                     primaryColor: '#0F172A',
                     accentColor: '#38BDF8',
@@ -544,6 +662,11 @@ function Step4Preview() {
             });
             setCurrentView('editor');
         }, 2000);
+        } catch (error) {
+            console.error('Error submitting deck data:', error);
+            setIsBuilding(false);
+            alert('Failed to submit deck data. Please try again.');
+        }
     };
 
     return (
@@ -656,6 +779,17 @@ function Step4Preview() {
 
 export default function DeckSetupWizard() {
     const { wizardStep, setWizardStep, setCurrentView } = useStudio();
+    const [wizardData, setWizardData] = useState({
+        referenceFiles: [null, null, null] as (UploadedFile | null)[],
+        content: {
+            audience: 'lp-investor',
+            brief: '',
+            research: [] as string[],
+            financialFiles: [] as UploadedFile[]
+        },
+        companyName: 'Swafinix',
+        presentationType: 'board presentation'
+    });
 
     const steps = [
         { id: 1, title: 'Upload Style', component: Step1Upload },
@@ -740,7 +874,18 @@ export default function DeckSetupWizard() {
                     transition={{ duration: 0.3 }}
                     className="bg-card/50 backdrop-blur-xl rounded-3xl border border-border/50 p-8"
                 >
-                    <CurrentComponent />
+                    {wizardStep === 1 && (
+                        <Step1Upload 
+                            onFilesChange={(files) => setWizardData({ ...wizardData, referenceFiles: files })} 
+                        />
+                    )}
+                    {wizardStep === 2 && <Step2AnalyzeStyle />}
+                    {wizardStep === 3 && (
+                        <Step3Content 
+                            onDataChange={(data) => setWizardData({ ...wizardData, content: data })} 
+                        />
+                    )}
+                    {wizardStep === 4 && <Step4Preview wizardData={wizardData} />}
                 </motion.div>
 
                 {/* Navigation */}
