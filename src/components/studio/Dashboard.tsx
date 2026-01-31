@@ -4,6 +4,13 @@ import { useStudio, type Project } from './StudioContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+
+const scrollToPricing = () => {
+    const pricingSection = document.getElementById('pricing-section');
+    if (pricingSection) {
+        pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+};
 import {
     Presentation,
     Plus,
@@ -351,6 +358,13 @@ export default function Dashboard() {
                         {/* Right: Actions */}
                         <div className="flex items-center gap-3">
                             <Button
+                                onClick={scrollToPricing}
+                                variant="outline"
+                            >
+                                Pricing
+                            </Button>
+                            
+                            <Button
                                 onClick={() => {
                                     setCurrentView('wizard');
                                 }}
@@ -434,6 +448,140 @@ export default function Dashboard() {
 
                 {/* Create New Section */}
                 <CreateNewSection />
+
+                {/* Pricing Section */}
+                <motion.section
+                    id="pricing-section"
+                    className="mt-16 mb-10"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                >
+                    <div className="text-center space-y-2 mb-8">
+                        <h2 className="text-3xl font-semibold text-foreground">
+                            Simple, Transparent Pricing
+                        </h2>
+                        <p className="text-muted-foreground">
+                            Choose the plan that's right for your business
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Starter Plan */}
+                        <div className="bg-card rounded-2xl p-6 border border-border/50 hover:border-primary/30 hover:shadow-xl transition-all">
+                            <div className="space-y-4">
+                                <div>
+                                    <h3 className="text-xl font-semibold text-foreground">Starter</h3>
+                                    <div className="mt-2">
+                                        <span className="text-4xl font-bold text-foreground">$29</span>
+                                        <span className="text-muted-foreground">/month</span>
+                                    </div>
+                                </div>
+                                <p className="text-muted-foreground">Perfect for small businesses getting started</p>
+                                <ul className="space-y-3">
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
+                                        <span className="text-sm">Up to 5 users</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
+                                        <span className="text-sm">10 presentations/month</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
+                                        <span className="text-sm">Basic templates</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
+                                        <span className="text-sm">Email support</span>
+                                    </li>
+                                </ul>
+                                <Button className="w-full" variant="outline">
+                                    Get Started
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* Professional Plan */}
+                        <div className="bg-card rounded-2xl p-6 border-2 border-primary relative hover:shadow-xl transition-all">
+                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold">
+                                POPULAR
+                            </div>
+                            <div className="space-y-4">
+                                <div>
+                                    <h3 className="text-xl font-semibold text-foreground">Professional</h3>
+                                    <div className="mt-2">
+                                        <span className="text-4xl font-bold text-foreground">$99</span>
+                                        <span className="text-muted-foreground">/month</span>
+                                    </div>
+                                </div>
+                                <p className="text-muted-foreground">For growing teams that need more power</p>
+                                <ul className="space-y-3">
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
+                                        <span className="text-sm">Up to 20 users</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
+                                        <span className="text-sm">Unlimited presentations</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
+                                        <span className="text-sm">Premium templates</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
+                                        <span className="text-sm">Priority support</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
+                                        <span className="text-sm">Custom branding</span>
+                                    </li>
+                                </ul>
+                                <Button className="w-full bg-gradient-to-r from-primary to-primary/80">
+                                    Get Started
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* Enterprise Plan */}
+                        <div className="bg-card rounded-2xl p-6 border border-border/50 hover:border-primary/30 hover:shadow-xl transition-all">
+                            <div className="space-y-4">
+                                <div>
+                                    <h3 className="text-xl font-semibold text-foreground">Enterprise</h3>
+                                    <div className="mt-2">
+                                        <span className="text-4xl font-bold text-foreground">Custom</span>
+                                    </div>
+                                </div>
+                                <p className="text-muted-foreground">For large organizations with custom needs</p>
+                                <ul className="space-y-3">
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
+                                        <span className="text-sm">Unlimited users</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
+                                        <span className="text-sm">Unlimited presentations</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
+                                        <span className="text-sm">Custom AI models</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
+                                        <span className="text-sm">24/7 dedicated support</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
+                                        <span className="text-sm">Custom SLA & onboarding</span>
+                                    </li>
+                                </ul>
+                                <Button className="w-full" variant="outline">
+                                    Contact Sales
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </motion.section>
             </main>
         </div>
     );

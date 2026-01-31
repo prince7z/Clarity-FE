@@ -168,6 +168,135 @@ export default function Index() {
 
             {/* Recent Insights */}
             <RecentInsights />
+
+            {/* Pricing Section */}
+            <div id="pricing-section" className="space-y-6 pt-12">
+              <div className="text-center space-y-2">
+                <h2 className="text-3xl font-semibold text-foreground">
+                  Simple, Transparent Pricing
+                </h2>
+                <p className="text-muted-foreground">
+                  Choose the plan that's right for your business
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                {/* Starter Plan */}
+                <div className="glass-card rounded-2xl p-6 shadow-glass hover:shadow-xl transition-shadow">
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-xl font-semibold text-foreground">Starter</h3>
+                      <div className="mt-2">
+                        <span className="text-4xl font-bold text-foreground">$29</span>
+                        <span className="text-muted-foreground">/month</span>
+                      </div>
+                    </div>
+                    <p className="text-muted-foreground">Perfect for small businesses getting started</p>
+                    <ul className="space-y-3">
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">✓</span>
+                        <span className="text-sm">Up to 5 users</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">✓</span>
+                        <span className="text-sm">Basic analytics</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">✓</span>
+                        <span className="text-sm">AI insights</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">✓</span>
+                        <span className="text-sm">Email support</span>
+                      </li>
+                    </ul>
+                    <button className="w-full py-2.5 px-4 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors font-medium">
+                      Get Started
+                    </button>
+                  </div>
+                </div>
+
+                {/* Professional Plan */}
+                <div className="glass-card rounded-2xl p-6 shadow-glass hover:shadow-xl transition-shadow border-2 border-primary relative">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold">
+                    POPULAR
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-xl font-semibold text-foreground">Professional</h3>
+                      <div className="mt-2">
+                        <span className="text-4xl font-bold text-foreground">$99</span>
+                        <span className="text-muted-foreground">/month</span>
+                      </div>
+                    </div>
+                    <p className="text-muted-foreground">For growing teams that need more power</p>
+                    <ul className="space-y-3">
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">✓</span>
+                        <span className="text-sm">Up to 20 users</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">✓</span>
+                        <span className="text-sm">Advanced analytics</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">✓</span>
+                        <span className="text-sm">Advanced AI insights</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">✓</span>
+                        <span className="text-sm">Priority support</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">✓</span>
+                        <span className="text-sm">Custom integrations</span>
+                      </li>
+                    </ul>
+                    <button className="w-full py-2.5 px-4 rounded-xl gradient-ai text-primary-foreground hover:opacity-90 transition-opacity font-medium">
+                      Get Started
+                    </button>
+                  </div>
+                </div>
+
+                {/* Enterprise Plan */}
+                <div className="glass-card rounded-2xl p-6 shadow-glass hover:shadow-xl transition-shadow">
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-xl font-semibold text-foreground">Enterprise</h3>
+                      <div className="mt-2">
+                        <span className="text-4xl font-bold text-foreground">Custom</span>
+                      </div>
+                    </div>
+                    <p className="text-muted-foreground">For large organizations with custom needs</p>
+                    <ul className="space-y-3">
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">✓</span>
+                        <span className="text-sm">Unlimited users</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">✓</span>
+                        <span className="text-sm">Enterprise analytics</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">✓</span>
+                        <span className="text-sm">Custom AI models</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">✓</span>
+                        <span className="text-sm">24/7 dedicated support</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-primary mt-1">✓</span>
+                        <span className="text-sm">Custom SLA</span>
+                      </li>
+                    </ul>
+                    <button className="w-full py-2.5 px-4 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors font-medium">
+                      Contact Sales
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </main>
       </div>
