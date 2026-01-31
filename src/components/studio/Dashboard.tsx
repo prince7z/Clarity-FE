@@ -320,30 +320,21 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="flex-1 bg-transparent">
             {/* Header */}
-            <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-                <div className="max-w-[1600px] mx-auto px-6 py-4">
+            <header className="border-b border-border/70 bg-background/60 backdrop-blur-xl">
+                <div className="max-w-6xl mx-auto px-4 py-4">
                     <div className="flex items-center justify-between">
-                        {/* Logo & Title */}
-                        <div className="flex items-center gap-4">
-                            <motion.div
-                                className="flex items-center gap-3"
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                            >
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/25">
-                                    <Presentation className="w-5 h-5 text-primary-foreground" />
-                                </div>
-                                <div>
-                                    <h1 className="font-bold text-lg">AI Presentation Studio</h1>
-                                    <p className="text-xs text-muted-foreground">PowerPoint Production Platform</p>
-                                </div>
-                            </motion.div>
+                        <div className="flex items-center gap-3">
+                            <div className="h-9 w-9 rounded-xl gradient-ai shadow-sm" aria-hidden="true" />
+                            <div className="leading-tight">
+                                <div className="text-sm font-semibold text-foreground">Clarity AI</div>
+                                <div className="text-xs text-muted-foreground">Projects</div>
+                            </div>
                         </div>
 
                         {/* Center: Quick Actions */}
-                        <div className="flex-1 max-w-xl mx-8">
+                        <div className="flex-1 max-w-xl mx-6">
                             <div className="relative">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                 <Input
@@ -405,7 +396,7 @@ export default function Dashboard() {
             </header>
 
             {/* Main Content */}
-            <main className="max-w-[1600px] mx-auto px-6 py-8">
+            <main className="max-w-6xl mx-auto px-4 py-8">
                 {/* Recent Decks Section */}
                 <motion.section
                     className="mb-10"

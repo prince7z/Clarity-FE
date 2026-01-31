@@ -638,7 +638,7 @@ export default function EditorWorkspace() {
 
     if (!currentDeck) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
+            <div className="flex-1 min-h-[calc(100vh-4rem)] flex items-center justify-center">
                 <div className="text-center">
                     <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
                     <p className="text-muted-foreground">Loading workspace...</p>
@@ -650,9 +650,9 @@ export default function EditorWorkspace() {
     const isBuilding = currentDeck.status === 'building' && buildProgress < 100;
 
     return (
-        <div className="h-screen flex flex-col bg-background">
+        <div className="flex-1 min-h-0 flex flex-col bg-background/70 backdrop-blur-xl">
             {/* Header */}
-            <header className="h-14 border-b border-border bg-background/80 backdrop-blur-xl flex items-center justify-between px-4 shrink-0">
+            <header className="h-14 border-b border-border bg-background/60 backdrop-blur-xl flex items-center justify-between px-4 shrink-0">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="sm" onClick={() => setCurrentView('dashboard')} className="gap-2">
                         <ChevronLeft className="w-4 h-4" />
@@ -660,7 +660,7 @@ export default function EditorWorkspace() {
                     </Button>
                     <Separator orientation="vertical" className="h-6" />
                     <div className="flex items-center gap-2">
-                        <Presentation className="w-4 h-4 text-primary" />
+                        <div className="h-6 w-6 rounded-lg gradient-ai shadow-sm" aria-hidden="true" />
                         <span className="font-semibold">{currentDeck.name}.pptx</span>
                     </div>
                     {isBuilding ? (
