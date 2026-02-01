@@ -367,8 +367,20 @@ function Step2AnalyzeStyle() {
     );
 }
 
-function Step3Content({ onDataChange }: { onDataChange?: (data: any) => void }) {
+function Step3Content({
+    companyName,
+    presentationType,
+    onMetaChange,
+    onDataChange,
+}: {
+    companyName: string;
+    presentationType: string;
+    onMetaChange?: (meta: { companyName: string; presentationType: string }) => void;
+    onDataChange?: (data: any) => void;
+}) {
     const { deckContent, setDeckContent } = useStudio();
+    const [localCompanyName, setLocalCompanyName] = useState(companyName || '');
+    const [localPresentationType, setLocalPresentationType] = useState(presentationType || '');
     const [selectedAudience, setSelectedAudience] = useState('lp-investor');
     const [briefText, setBriefText] = useState('');
     const [selectedResearch, setSelectedResearch] = useState<string[]>([]);
@@ -381,6 +393,15 @@ function Step3Content({ onDataChange }: { onDataChange?: (data: any) => void }) 
             brief: briefText,
             research: selectedResearch,
             financialFiles: financialFiles
+        });
+    };
+
+    const updateMeta = (next: { companyName?: string; presentationType?: string }) => {
+        const nextCompanyName = next.companyName ?? localCompanyName;
+        const nextPresentationType = next.presentationType ?? localPresentationType;
+        onMetaChange?.({
+            companyName: nextCompanyName,
+            presentationType: nextPresentationType,
         });
     };
 
@@ -429,6 +450,41 @@ function Step3Content({ onDataChange }: { onDataChange?: (data: any) => void }) 
                 <p className="text-muted-foreground max-w-md mx-auto">
                     Tell us about your audience and provide the content for your presentation.
                 </p>
+            </div>
+
+            {/* Company / Deck Metadata */}
+            <div className="space-y-4">
+                <Label className="text-sm font-medium">COMPANY & DECK</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="company-name" className="text-xs text-muted-foreground">Company Name</Label>
+                        <Input
+                            id="company-name"
+                            placeholder="e.g., CloudScale"
+                            value={localCompanyName}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                setLocalCompanyName(value);
+                                setTimeout(() => updateMeta({ companyName: value }), 0);
+                            }}
+                            className="bg-background/50"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="presentation-type" className="text-xs text-muted-foreground">Presentation Type</Label>
+                        <Input
+                            id="presentation-type"
+                            placeholder="e.g., board presentation, investor update, pitch deck"
+                            value={localPresentationType}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                setLocalPresentationType(value);
+                                setTimeout(() => updateMeta({ presentationType: value }), 0);
+                            }}
+                            className="bg-background/50"
+                        />
+                    </div>
+                </div>
             </div>
 
             {/* Audience Selection */}
@@ -623,7 +679,7 @@ function Step4Preview({ wizardData }: { wizardData?: any }) {
 
             // Send axios request
             const response = await axios.post(
-                'https://n8n.srv1291751.hstgr.cloud/webhook-test/generate-presentation',
+                'https://n8n.srv1291751.hstgr.cloud/webhook/generate-presentation',
                 formData,
                 {
                     headers: {
@@ -865,7 +921,10 @@ export default function DeckSetupWizard() {
                     {wizardStep === 2 && <Step2AnalyzeStyle />}
                     {wizardStep === 3 && (
                         <Step3Content 
-                            onDataChange={(data) => setWizardData({ ...wizardData, content: data })} 
+                            companyName={wizardData.companyName}
+                            presentationType={wizardData.presentationType}
+                            onMetaChange={(meta) => setWizardData((prev) => ({ ...prev, ...meta }))}
+                            onDataChange={(data) => setWizardData((prev) => ({ ...prev, content: data }))} 
                         />
                     )}
                     {wizardStep === 4 && <Step4Preview wizardData={wizardData} />}
