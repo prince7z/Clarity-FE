@@ -122,9 +122,9 @@ export default function PricingPage() {
                 {[
                   {
                     cap: "PPT generations",
-                    starter: "10 / month",
-                    growth: "40 / month",
-                    ent: "Custom (high-volume)",
+                    starter: "20 / month",
+                    growth: "45 / month",
+                    ent: "Pay-as-you-go",
                   },
                   {
                     cap: "Slides per deck",

@@ -7,7 +7,16 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import {
     ResizableHandle,
     ResizablePanel,
@@ -602,6 +611,32 @@ function InspectorPanel() {
     );
 }
 
+// Convert Gamma URL to embed format
+const getEmbedUrl = (url: string): string => {
+    if (url.includes('gamma.app/docs/')) {
+        // Convert https://gamma.app/docs/ID to https://gamma.app/embed/ID
+        return url.replace('/docs/', '/embed/');
+    }
+    return url;
+};
+
+type ComingSoonAction =
+    | 'Edit text'
+    | 'Replace image'
+    | 'Theme & layout'
+    | 'Add slide'
+    | 'Export'
+    | 'Ask Clarity AI'
+    | 'Apply comment'
+    | 'Other';
+
+type SlideComment = {
+    id: string;
+    slideNumber: number;
+    text: string;
+    createdAt: number;
+};
+
 export default function EditorWorkspace() {
     const { currentDeck, setCurrentView, setSelectedSlideId } = useStudio();
     const [buildProgress, setBuildProgress] = useState(0);
@@ -610,6 +645,292 @@ export default function EditorWorkspace() {
     const [showQAPanel, setShowQAPanel] = useState(false);
     const [unreadComments, setUnreadComments] = useState(3);
     const [qaIssues, setQaIssues] = useState(2);
+    const [comingSoonOpen, setComingSoonOpen] = useState(false);
+    const [comingSoonAction, setComingSoonAction] = useState<ComingSoonAction>('Other');
+    const [chatOpen, setChatOpen] = useState(false);
+    const [chatDraft, setChatDraft] = useState('');
+    const [selectedIframeSlide, setSelectedIframeSlide] = useState(1);
+    const [commentDraft, setCommentDraft] = useState('');
+    const [comments, setComments] = useState<SlideComment[]>([]);
+    const [commentDialogOpen, setCommentDialogOpen] = useState(false);
+    
+    // If deck has iframe URL, show iframe view
+    if (currentDeck?.iframeUrl) {
+        const embedUrl = getEmbedUrl(currentDeck.iframeUrl);
+
+        const slides = Array.from({ length: 12 }, (_, idx) => ({
+            number: idx + 1,
+            title: idx === 0 ? 'Title' : `Slide ${idx + 1}`,
+        }));
+
+        const openComingSoon = (action: ComingSoonAction) => {
+            setComingSoonAction(action);
+            setComingSoonOpen(true);
+        };
+
+        const addComment = () => {
+            const trimmed = commentDraft.trim();
+            if (!trimmed) return;
+            setComments((prev) => [
+                {
+                    id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+                    slideNumber: selectedIframeSlide,
+                    text: trimmed,
+                    createdAt: Date.now(),
+                },
+                ...prev,
+            ]);
+            setCommentDraft('');
+            setCommentDialogOpen(false);
+            openComingSoon('Apply comment');
+        };
+
+        return (
+            <div className="flex-1 min-h-[calc(100vh-0px)] flex flex-col bg-background">
+                {/* Header / Toolbar */}
+                <div className="shrink-0 border-b border-border bg-background/80 backdrop-blur-xl">
+                    <div className="flex items-center justify-between px-4 md:px-6 py-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setCurrentView('dashboard')}
+                                className="gap-2"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                                Back to Studio
+                            </Button>
+                            <Separator orientation="vertical" className="h-6" />
+                            <div className="min-w-0">
+                                <div className="font-semibold truncate">{currentDeck.name}</div>
+                                <div className="text-xs text-muted-foreground">Enterprise viewer · Editing tools (demo)</div>
+                            </div>
+                            <Badge className="ml-2 bg-emerald-500/10 text-emerald-700 border-0">Connected</Badge>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm" className="gap-2" onClick={() => openComingSoon('Edit text')}>
+                                <Edit3 className="w-4 h-4" />
+                                Edit
+                            </Button>
+                            <Button variant="outline" size="sm" className="gap-2" onClick={() => setCommentDialogOpen(true)}>
+                                <MessageSquare className="w-4 h-4" />
+                                Comment
+                            </Button>
+                            <Button variant="outline" size="sm" className="gap-2" onClick={() => setChatOpen(true)}>
+                                <Sparkles className="w-4 h-4" />
+                                Ask Clarity AI
+                            </Button>
+                            <Button variant="outline" size="sm" className="gap-2" onClick={() => openComingSoon('Export')}>
+                                <Download className="w-4 h-4" />
+                                Export
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => window.open(currentDeck.iframeUrl, '_blank')}
+                                className="gap-2"
+                            >
+                                <ExternalLink className="w-4 h-4" />
+                                Open in Gamma
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="px-4 md:px-6 pb-3">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1">
+                                <Layers className="w-3 h-3" />
+                                Slide {selectedIframeSlide} of {slides.length}
+                            </span>
+                            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1">
+                                <Zap className="w-3 h-3" />
+                                Live render (embed)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Body */}
+                <div className="flex-1 min-h-0 flex">
+                    {/* Left: Slide list + comments */}
+                    <div className="hidden lg:flex w-[320px] shrink-0 border-r border-border bg-background/60 backdrop-blur-xl flex-col">
+                        <div className="p-4 border-b border-border">
+                            <div className="flex items-center justify-between">
+                                <div className="font-semibold">Slides</div>
+                                <Button variant="ghost" size="sm" className="gap-2" onClick={() => openComingSoon('Add slide')}>
+                                    <Plus className="w-4 h-4" />
+                                    Add
+                                </Button>
+                            </div>
+                            <div className="text-xs text-muted-foreground">Select a slide to comment/edit</div>
+                        </div>
+
+                        <ScrollArea className="flex-1">
+                            <div className="p-3 space-y-2">
+                                {slides.map((s) => (
+                                    <button
+                                        key={s.number}
+                                        type="button"
+                                        onClick={() => setSelectedIframeSlide(s.number)}
+                                        className={`w-full text-left rounded-xl border px-3 py-2 transition-colors ${
+                                            selectedIframeSlide === s.number
+                                                ? 'border-primary bg-primary/10'
+                                                : 'border-border bg-background hover:bg-muted/60'
+                                        }`}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-muted text-xs font-semibold">
+                                                    {s.number}
+                                                </span>
+                                                <span className="text-sm font-medium">{s.title}</span>
+                                            </div>
+                                            <span className="text-[10px] text-muted-foreground">Ready</span>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        </ScrollArea>
+
+                        <div className="border-t border-border p-4">
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="font-semibold">Comments</div>
+                                <Badge className="bg-muted text-muted-foreground border-0">{comments.length}</Badge>
+                            </div>
+                            <div className="text-xs text-muted-foreground mb-3">Demo: comments queue changes (pending)</div>
+
+                            <div className="space-y-2 max-h-40 overflow-auto pr-1">
+                                {comments.length === 0 ? (
+                                    <div className="text-xs text-muted-foreground">No comments yet.</div>
+                                ) : (
+                                    comments.slice(0, 4).map((c) => (
+                                        <div key={c.id} className="rounded-xl border border-border bg-background p-3">
+                                            <div className="flex items-center justify-between">
+                                                <div className="text-xs font-semibold">Slide {c.slideNumber}</div>
+                                                <Badge className="bg-amber-500/10 text-amber-700 border-0">Pending</Badge>
+                                            </div>
+                                            <div className="mt-2 text-xs text-muted-foreground line-clamp-3">{c.text}</div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            <Button
+                                className="w-full mt-3 gap-2"
+                                variant="outline"
+                                onClick={() => setCommentDialogOpen(true)}
+                            >
+                                <MessageSquare className="w-4 h-4" />
+                                Add comment
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* Center: iframe */}
+                    <div className="flex-1 min-h-0 bg-muted/30 p-3 md:p-6">
+                        <div className="h-full min-h-[75vh] bg-white rounded-2xl shadow-xl overflow-hidden border border-border">
+                            <iframe
+                                src={embedUrl}
+                                className="h-full w-full"
+                                style={{ border: 'none' }}
+                                title="Presentation"
+                                allowFullScreen
+                                allow="fullscreen"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Coming soon modal */}
+                <Dialog open={comingSoonOpen} onOpenChange={setComingSoonOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Implementation in progress</DialogTitle>
+                            <DialogDescription>
+                                “{comingSoonAction}” is staged for the next release. This demo UI shows the enterprise editor workflow.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="rounded-xl bg-muted/50 p-4 text-sm text-muted-foreground">
+                            Next steps: wire Gamma export/import, slide-level diffs, and AI-assisted edits.
+                        </div>
+                        <DialogFooter>
+                            <Button onClick={() => setComingSoonOpen(false)}>Got it</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Comment dialog */}
+                <Dialog open={commentDialogOpen} onOpenChange={setCommentDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Add comment (Slide {selectedIframeSlide})</DialogTitle>
+                            <DialogDescription>
+                                Describe what you want changed. For demo, it will be queued as “Pending”.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <Textarea
+                            value={commentDraft}
+                            onChange={(e) => setCommentDraft(e.target.value)}
+                            placeholder="e.g., Replace this chart with a CAGR bar chart; make the header more concise; add 3 bullets."
+                            className="min-h-[120px]"
+                        />
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setCommentDialogOpen(false)}>Cancel</Button>
+                            <Button onClick={addComment} disabled={!commentDraft.trim()}>Queue change</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Chat dialog */}
+                <Dialog open={chatOpen} onOpenChange={setChatOpen}>
+                    <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                            <DialogTitle>Clarity AI Chat</DialogTitle>
+                            <DialogDescription>
+                                Ask questions about the deck, request edits, or generate slide copy. For now this is a demo shell.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="rounded-2xl border border-border bg-muted/30 p-4 h-[280px] overflow-auto text-sm text-muted-foreground">
+                            <div className="space-y-3">
+                                <div className="rounded-xl bg-background p-3 border border-border">
+                                    <div className="text-xs font-semibold text-foreground">Clarity AI</div>
+                                    <div className="mt-1">Share what you want to change and I’ll suggest the best edits.</div>
+                                </div>
+                                <div className="rounded-xl bg-background p-3 border border-border">
+                                    <div className="text-xs font-semibold text-foreground">Demo note</div>
+                                    <div className="mt-1">Live chat + slide actions are “implementation in progress”.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Textarea
+                                value={chatDraft}
+                                onChange={(e) => setChatDraft(e.target.value)}
+                                placeholder="Ask: 'Rewrite slide 3 to focus on traction', 'Add a market sizing slide', etc."
+                                className="min-h-[90px]"
+                            />
+                            <div className="flex justify-end gap-2">
+                                <Button variant="outline" onClick={() => setChatOpen(false)}>Close</Button>
+                                <Button
+                                    onClick={() => {
+                                        setChatDraft('');
+                                        setChatOpen(false);
+                                        openComingSoon('Ask Clarity AI');
+                                    }}
+                                    disabled={!chatDraft.trim()}
+                                    className="gap-2"
+                                >
+                                    <Sparkles className="w-4 h-4" />
+                                    Send
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            </div>
+        );
+    }
 
     // Simulate building progress
     useEffect(() => {

@@ -45,6 +45,7 @@ export interface CurrentDeck {
     slides: SlideData[];
     buildProgress: number;
     status: 'building' | 'ready' | 'editing';
+    iframeUrl?: string; // Optional iframe URL for Gamma presentations
 }
 
 interface StudioContextType {
@@ -70,6 +71,8 @@ interface StudioContextType {
     setRightPanelTab: (tab: string) => void;
     darkMode: boolean;
     setDarkMode: (value: boolean) => void;
+    pollingPresentationId: string | null;
+    setPollingPresentationId: (id: string | null) => void;
 }
 
 const StudioContext = createContext<StudioContextType | undefined>(undefined);
@@ -115,6 +118,7 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     const [selectedSlideId, setSelectedSlideId] = useState<string | null>(null);
     const [rightPanelTab, setRightPanelTab] = useState('content');
     const [darkMode, setDarkMode] = useState(false);
+    const [pollingPresentationId, setPollingPresentationId] = useState<string | null>(null);
 
     return (
         <StudioContext.Provider
@@ -141,6 +145,8 @@ export function StudioProvider({ children }: { children: ReactNode }) {
                 setRightPanelTab,
                 darkMode,
                 setDarkMode,
+                pollingPresentationId,
+                setPollingPresentationId,
             }}
         >
             {children}

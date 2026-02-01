@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useStudio, type Project } from './StudioContext';
 import { Button } from '@/components/ui/button';
@@ -33,7 +33,8 @@ import {
     PieChart,
     Users,
     BarChart3,
-    Building2
+    Building2,
+    RefreshCw
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -83,6 +84,57 @@ function getStatusInfo(status: Project['status']) {
         default:
             return { icon: FileText, label: 'Unknown', color: 'text-muted-foreground', bg: 'bg-muted' };
     }
+}
+
+function PresentationCard({ presentation, onClick }: { presentation: SheetPresentation; onClick: () => void }) {
+    const isCompleted = presentation.status === 'completed';
+    const StatusIcon = isCompleted ? CheckCircle2 : Loader2;
+
+    return (
+        <motion.div
+            whileHover={{ y: -4, scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className={`group ${isCompleted ? 'cursor-pointer' : 'cursor-default'}`}
+            onClick={isCompleted ? onClick : undefined}
+        >
+            <div className={`bg-card rounded-2xl border border-border/50 p-6 transition-all duration-300 relative overflow-hidden ${
+                isCompleted ? 'hover:border-primary/30 hover:shadow-xl' : 'opacity-75'
+            }`}>
+                {/* Gradient overlay on hover */}
+                {isCompleted && (
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                )}
+
+                {/* Thumbnail placeholder */}
+                <div className="relative aspect-[16/10] rounded-xl bg-muted/50 mb-4 overflow-hidden flex items-center justify-center border border-border/30">
+                    <Presentation className="w-12 h-12 text-muted-foreground/30" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                </div>
+
+                <div className="relative">
+                    <h3 className={`font-semibold text-lg mb-2 transition-colors ${
+                        isCompleted ? 'group-hover:text-primary' : ''
+                    }`}>
+                        {presentation.companyName}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-3">
+                        {presentation.presentationType}
+                    </p>
+                    <div className="flex items-center justify-between">
+                        <Badge variant="secondary" className={`gap-1.5 ${
+                            isCompleted ? 'bg-emerald-500/10 text-emerald-600' : 'bg-blue-500/10 text-blue-600'
+                        }`}>
+                            <StatusIcon className={`w-3 h-3 ${!isCompleted ? 'animate-spin' : ''}`} />
+                            {isCompleted ? 'Completed' : 'Queued'}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground font-mono">
+                            {presentation.presentationId.split('_')[1]?.substring(0, 8)}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </motion.div>
+    );
 }
 
 function ProjectCard({ project, onClick }: { project: Project; onClick: () => void }) {
@@ -281,42 +333,120 @@ function CreateNewSection() {
     );
 }
 
-export default function Dashboard() {
-    const { projects, setCurrentView, setCurrentDeck } = useStudio();
-    const [searchQuery, setSearchQuery] = useState('');
+interface SheetPresentation {
+    presentationId: string;
+    companyName: string;
+    presentationType: string;
+    status: 'queued' | 'completed';
+    presentationUrl: string | null;
+    createdAt: string;
+}
 
-    const filteredProjects = projects.filter(project =>
-        project.name.toLowerCase().includes(searchQuery.toLowerCase())
+export default function Dashboard() {
+    const { setCurrentView, setCurrentDeck } = useStudio();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [presentations, setPresentations] = useState<SheetPresentation[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const fetchPresentations = async () => {
+        setIsLoading(true);
+        try {
+            const sheetId = '1HsytksVRGJagIh6mFfpvUVz57G9sNKlZLlfR-y5YmgI';
+            const response = await fetch(
+                `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Sheet1`
+            );
+            
+            if (!response.ok) {
+                console.error('Failed to fetch sheet data');
+                return;
+            }
+
+            const text = await response.text();
+            const jsonString = text.substring(47, text.length - 2);
+            const data = JSON.parse(jsonString);
+
+            const rows = data.table.rows;
+            if (rows.length === 0) return;
+
+            // First row contains headers
+            const headerRow = rows[0].c;
+            const headers = headerRow.map((cell: any) => cell?.v || '');
+            
+            const idIndex = headers.findIndex((h: string) => h.toLowerCase() === 'presentation_id');
+            const companyIndex = headers.findIndex((h: string) => h.toLowerCase() === 'company_name');
+            const typeIndex = headers.findIndex((h: string) => h.toLowerCase() === 'presentation_type');
+            const statusIndex = headers.findIndex((h: string) => h.toLowerCase() === 'status');
+            const urlIndex = headers.findIndex((h: string) => h.toLowerCase() === 'presentation_url');
+            const createdIndex = headers.findIndex((h: string) => h.toLowerCase() === 'created_at');
+
+            const presentations: SheetPresentation[] = [];
+            
+            // Skip first row (headers) and iterate through data
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].c;
+                if (!cells) continue;
+                
+                const presentationId = cells[idIndex]?.v;
+                if (!presentationId) continue;
+
+                const companyName = cells[companyIndex]?.v || 'Untitled';
+                const presentationType = cells[typeIndex]?.v || 'Presentation';
+                const presentationUrl = cells[urlIndex]?.v || null;
+                const createdAt = cells[createdIndex]?.v || '';
+                const status = presentationUrl ? 'completed' : 'queued';
+
+                presentations.push({
+                    presentationId,
+                    companyName,
+                    presentationType,
+                    status,
+                    presentationUrl,
+                    createdAt,
+                });
+            }
+
+            setPresentations(presentations.reverse()); // Show newest first
+        } catch (error) {
+            console.error('Error fetching presentations:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchPresentations();
+    }, []);
+
+    const filteredPresentations = presentations.filter(pres =>
+        pres.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        pres.presentationId.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const handleProjectClick = (project: Project) => {
-        // Mock loading a deck into the editor
-        setCurrentDeck({
-            id: project.id,
-            name: project.name,
-            style: {
-                primaryColor: '#0F172A',
-                accentColor: '#38BDF8',
-                titleFont: 'Calibri',
-                titleSize: '32pt',
-                bodyFont: 'Calibri',
-                bodySize: '14pt',
-                margins: '0.5"',
-                logoPosition: 'bottom-right',
-                chartStyle: 'column',
-                confidence: 94,
-            },
-            slides: [
-                { id: '1', title: 'Title Slide', type: 'title', content: {} },
-                { id: '2', title: 'Executive Summary', type: 'summary', content: {} },
-                { id: '3', title: 'Market Size', type: 'chart', content: {} },
-                { id: '4', title: 'Competitive Landscape', type: 'comparison', content: {} },
-                { id: '5', title: 'Financial Highlights', type: 'chart', content: {} },
-            ],
-            buildProgress: 100,
-            status: 'ready',
-        });
-        setCurrentView('editor');
+    const handlePresentationClick = (presentation: SheetPresentation) => {
+        if (presentation.status === 'completed' && presentation.presentationUrl) {
+            // Load deck with iframe URL
+            setCurrentDeck({
+                id: presentation.presentationId,
+                name: `${presentation.companyName} - ${presentation.presentationType}`,
+                style: {
+                    primaryColor: '#0F172A',
+                    accentColor: '#38BDF8',
+                    titleFont: 'Calibri',
+                    titleSize: '32pt',
+                    bodyFont: 'Calibri',
+                    bodySize: '14pt',
+                    margins: '0.5"',
+                    logoPosition: 'bottom-right',
+                    chartStyle: 'column',
+                    confidence: 94,
+                },
+                slides: [],
+                buildProgress: 100,
+                status: 'ready',
+                iframeUrl: presentation.presentationUrl, // Add iframe URL
+            });
+            setCurrentView('editor');
+        }
     };
 
     return (
@@ -405,174 +535,53 @@ export default function Dashboard() {
                 >
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <h2 className="text-xl font-semibold">Recent Decks</h2>
-                            <p className="text-sm text-muted-foreground">Pick up where you left off</p>
+                            <h2 className="text-xl font-semibold">Your Presentations</h2>
+                            <p className="text-sm text-muted-foreground">Generated presentations from your requests</p>
                         </div>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="gap-2">
-                                    Recent Projects
-                                    <ChevronDown className="w-4 h-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuItem>All Projects</DropdownMenuItem>
-                                <DropdownMenuItem>Recent Projects</DropdownMenuItem>
-                                <DropdownMenuItem>Favorites</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <Button
+                            onClick={fetchPresentations}
+                            disabled={isLoading}
+                            variant="outline"
+                            className="gap-2"
+                        >
+                            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                            Refresh
+                        </Button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredProjects.map((project, index) => (
-                            <motion.div
-                                key={project.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                            >
-                                <ProjectCard project={project} onClick={() => handleProjectClick(project)} />
-                            </motion.div>
-                        ))}
-                    </div>
+                    {isLoading ? (
+                        <div className="flex items-center justify-center py-12">
+                            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                        </div>
+                    ) : filteredPresentations.length === 0 ? (
+                        <div className="text-center py-12 text-muted-foreground">
+                            <Presentation className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                            <p>No presentations found. Create your first one!</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredPresentations.map((presentation, index) => (
+                                <motion.div
+                                    key={presentation.presentationId}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                >
+                                    <PresentationCard
+                                        presentation={presentation}
+                                        onClick={() => handlePresentationClick(presentation)}
+                                    />
+                                </motion.div>
+                            ))}
+                        </div>
+                    )}
                 </motion.section>
 
                 {/* Create New Section */}
                 <CreateNewSection />
 
                 {/* Pricing Section */}
-                <motion.section
-                    id="pricing-section"
-                    className="mt-16 mb-10"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                >
-                    <div className="text-center space-y-2 mb-8">
-                        <h2 className="text-3xl font-semibold text-foreground">
-                            Simple, Transparent Pricing
-                        </h2>
-                        <p className="text-muted-foreground">
-                            Choose the plan that's right for your business
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Starter Plan */}
-                        <div className="bg-card rounded-2xl p-6 border border-border/50 hover:border-primary/30 hover:shadow-xl transition-all">
-                            <div className="space-y-4">
-                                <div>
-                                    <h3 className="text-xl font-semibold text-foreground">Starter</h3>
-                                    <div className="mt-2">
-                                        <span className="text-4xl font-bold text-foreground">$29</span>
-                                        <span className="text-muted-foreground">/month</span>
-                                    </div>
-                                </div>
-                                <p className="text-muted-foreground">Perfect for small businesses getting started</p>
-                                <ul className="space-y-3">
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
-                                        <span className="text-sm">Up to 5 users</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
-                                        <span className="text-sm">10 presentations/month</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
-                                        <span className="text-sm">Basic templates</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
-                                        <span className="text-sm">Email support</span>
-                                    </li>
-                                </ul>
-                                <Button className="w-full" variant="outline">
-                                    Get Started
-                                </Button>
-                            </div>
-                        </div>
-
-                        {/* Professional Plan */}
-                        <div className="bg-card rounded-2xl p-6 border-2 border-primary relative hover:shadow-xl transition-all">
-                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold">
-                                POPULAR
-                            </div>
-                            <div className="space-y-4">
-                                <div>
-                                    <h3 className="text-xl font-semibold text-foreground">Professional</h3>
-                                    <div className="mt-2">
-                                        <span className="text-4xl font-bold text-foreground">$99</span>
-                                        <span className="text-muted-foreground">/month</span>
-                                    </div>
-                                </div>
-                                <p className="text-muted-foreground">For growing teams that need more power</p>
-                                <ul className="space-y-3">
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
-                                        <span className="text-sm">Up to 20 users</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
-                                        <span className="text-sm">Unlimited presentations</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
-                                        <span className="text-sm">Premium templates</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
-                                        <span className="text-sm">Priority support</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
-                                        <span className="text-sm">Custom branding</span>
-                                    </li>
-                                </ul>
-                                <Button className="w-full bg-gradient-to-r from-primary to-primary/80">
-                                    Get Started
-                                </Button>
-                            </div>
-                        </div>
-
-                        {/* Enterprise Plan */}
-                        <div className="bg-card rounded-2xl p-6 border border-border/50 hover:border-primary/30 hover:shadow-xl transition-all">
-                            <div className="space-y-4">
-                                <div>
-                                    <h3 className="text-xl font-semibold text-foreground">Enterprise</h3>
-                                    <div className="mt-2">
-                                        <span className="text-4xl font-bold text-foreground">Custom</span>
-                                    </div>
-                                </div>
-                                <p className="text-muted-foreground">For large organizations with custom needs</p>
-                                <ul className="space-y-3">
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
-                                        <span className="text-sm">Unlimited users</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
-                                        <span className="text-sm">Unlimited presentations</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
-                                        <span className="text-sm">Custom AI models</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
-                                        <span className="text-sm">24/7 dedicated support</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
-                                        <span className="text-sm">Custom SLA & onboarding</span>
-                                    </li>
-                                </ul>
-                                <Button className="w-full" variant="outline">
-                                    Contact Sales
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </motion.section>
+                
             </main>
         </div>
     );

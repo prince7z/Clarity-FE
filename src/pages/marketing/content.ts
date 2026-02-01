@@ -23,7 +23,7 @@ export const pricingPlans: PricingPlan[] = [
     ctaLabel: "Start generating",
     ctaHref: "/studio",
     bullets: [
-      "10 PPT generations / month",
+      "20 PPT generations / month",
       "Up to 15 slides per deck",
       "1 reference style per project",
       "Basic visuals + core chart types",
@@ -34,13 +34,13 @@ export const pricingPlans: PricingPlan[] = [
   },
   {
     name: "Growth",
-    priceLabel: "₹969 / month",
+    priceLabel: "₹999 / month",
     tagline: "For teams building investor-ready narratives at speed.",
     highlight: true,
     ctaLabel: "Upgrade to Growth",
     ctaHref: "/studio",
     bullets: [
-      "40 PPT generations / month",
+      "45 PPT generations / month",
       "Up to 30 slides per deck",
       "Up to 5 reference styles",
       "Advanced charts + richer layouts",
@@ -51,12 +51,12 @@ export const pricingPlans: PricingPlan[] = [
   },
   {
     name: "Enterprise",
-    priceLabel: "₹999+ / month",
+    priceLabel: "As you go",
     tagline: "For enterprises that need scale, governance, and data depth.",
     ctaLabel: "Talk to sales",
     ctaHref: "/contact",
     bullets: [
-      "High-volume PPT creation (custom limits)",
+      "Pay-as-you-go PPT creation",
       "Unlimited slides (fair use)",
       "Full market + economy analysis",
       "Premium visuals + brand controls",

@@ -571,7 +571,7 @@ function Step3Content({ onDataChange }: { onDataChange?: (data: any) => void }) 
 function Step4Preview({ wizardData }: { wizardData?: any }) {
     const [selectedBuild, setSelectedBuild] = useState('standard');
     const [isBuilding, setIsBuilding] = useState(false);
-    const { setCurrentView, setCurrentDeck } = useStudio();
+    const { setCurrentView, setCurrentDeck, setPollingPresentationId } = useStudio();
 
     const slideOutline = [
         { num: 1, title: 'TITLE SLIDE' },
@@ -623,7 +623,7 @@ function Step4Preview({ wizardData }: { wizardData?: any }) {
 
             // Send axios request
             const response = await axios.post(
-                'https://n8n.srv1291751.hstgr.cloud/form-test/9bec0b3f-a9fa-407e-87e5-0533a8524ea5',
+                'https://n8n.srv1291751.hstgr.cloud/webhook-test/generate-presentation',
                 formData,
                 {
                     headers: {
@@ -634,34 +634,17 @@ function Step4Preview({ wizardData }: { wizardData?: any }) {
 
             console.log('Response:', response.data);
             
-            // Simulate building process after successful upload
-            setTimeout(() => {
-                setCurrentDeck({
-                    id: 'new-deck',
-                    name: 'CloudScale Investment Deck',
-                style: {
-                    primaryColor: '#0F172A',
-                    accentColor: '#38BDF8',
-                    titleFont: 'Calibri',
-                    titleSize: '32pt',
-                    bodyFont: 'Calibri',
-                    bodySize: '14pt',
-                    margins: '0.5"',
-                    logoPosition: 'bottom-right',
-                    chartStyle: 'column',
-                    confidence: 94,
-                },
-                slides: slideOutline.map((slide, index) => ({
-                    id: String(index + 1),
-                    title: slide.title,
-                    type: index === 0 ? 'title' : index === 1 ? 'summary' : 'content',
-                    content: {},
-                })),
-                buildProgress: 0,
-                status: 'building',
-            });
-            setCurrentView('editor');
-        }, 2000);
+            // Check if response has presentation_id
+            if (response.data && response.data.presentation_id) {
+                // Set the presentation ID for polling
+                setPollingPresentationId(response.data.presentation_id);
+                // Navigate to polling view
+                setCurrentView('polling');
+            } else {
+                // Fallback: if no presentation_id, show error
+                alert('Failed to start presentation generation. No presentation ID received.');
+                setIsBuilding(false);
+            }
         } catch (error) {
             console.error('Error submitting deck data:', error);
             setIsBuilding(false);

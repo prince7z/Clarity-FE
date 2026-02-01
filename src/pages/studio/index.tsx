@@ -4,13 +4,14 @@ import Dashboard from '@/components/studio/Dashboard';
 import DeckSetupWizard from '@/components/studio/DeckSetupWizard';
 import EditorWorkspace from '@/components/studio/EditorWorkspace';
 import OnboardingFlow from '@/components/studio/OnboardingFlow';
+import PresentationPolling from '@/components/studio/PresentationPolling';
 import { StudioProvider, useStudio } from '@/components/studio/StudioContext';
 import { StudioHeader } from '@/components/studio/StudioHeader.tsx';
 
-export type StudioView = 'dashboard' | 'wizard' | 'editor' | 'onboarding';
+export type StudioView = 'dashboard' | 'wizard' | 'editor' | 'onboarding' | 'polling';
 
 function StudioContent() {
-  const { currentView, setCurrentView, isFirstVisit } = useStudio();
+  const { currentView, setCurrentView, isFirstVisit, pollingPresentationId, setPollingPresentationId } = useStudio();
   
   useEffect(() => {
     if (isFirstVisit) {
@@ -27,7 +28,7 @@ function StudioContent() {
     >
       <div className="absolute inset-0 gradient-ai-subtle" aria-hidden="true" />
       <div className="absolute -top-24 left-1/2 h-72 w-[44rem] -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" aria-hidden="true" />
-      <StudioHeader />
+      {/* <StudioHeader /> */}
       <div className="relative flex-1 min-h-0">
         <AnimatePresence mode="wait">
           {currentView === 'onboarding' && (
@@ -76,6 +77,24 @@ function StudioContent() {
               transition={{ duration: 0.3 }}
             >
               <EditorWorkspace />
+            </motion.div>
+          )}
+          {currentView === 'polling' && pollingPresentationId && (
+            <motion.div
+              key="polling"
+              className="h-full"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+            >
+              <PresentationPolling 
+                presentationId={pollingPresentationId}
+                onComplete={(url) => {
+                  console.log('Presentation complete:', url);
+                  // Optionally redirect or do something with the URL
+                }}
+              />
             </motion.div>
           )}
         </AnimatePresence>
