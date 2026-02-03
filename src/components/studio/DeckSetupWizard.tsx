@@ -10,6 +10,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+
+const N8N_URL = import.meta.env.VITE_N8N_URL;
+
 import {
     Upload,
     FileUp,
@@ -647,39 +650,40 @@ function Step4Preview({ wizardData }: { wizardData?: any }) {
 
         try {
             // Prepare FormData
-            const formData = new FormData();
-            
-            // Add form fields from collected data
-            formData.append('Company Name', wizardData?.companyName || 'Not provided');
-            formData.append('Presentation Type', wizardData?.presentationType || 'board presentation');
-            formData.append('Target Audience', wizardData?.content?.audience || 'lp-investor');
-            formData.append('Investment Thesis / Key Message', wizardData?.content?.brief || '');
-            
-            // Add research requirements (comma-separated)
-            const researchRequirements = wizardData?.content?.research?.join(', ') || '';
-            formData.append('Research Requirements', researchRequirements);
-            
-            // Append actual reference presentation files
-            if (wizardData?.referenceFiles) {
-                wizardData.referenceFiles.forEach((fileData: UploadedFile | null, index: number) => {
-                    if (fileData?.file) {
-                        formData.append('Reference Presentations (Upload 2-3 for Deck DNA)', fileData.file, fileData.name);
-                    }
-                });
-            }
-            
-            // Append actual financial files
-            if (wizardData?.content?.financialFiles) {
-                wizardData.content.financialFiles.forEach((fileData: UploadedFile, index: number) => {
-                    if (fileData.file) {
-                        formData.append('Financial Data / Excel Files', fileData.file, fileData.name);
-                    }
-                });
-            }
+const formData = new FormData();
+
+// Use snake_case to match n8n expectations
+formData.append('company_name', wizardData?.companyName || 'Not provided');
+formData.append('presentation_type', wizardData?.presentationType || 'board presentation');
+formData.append('target_audience', wizardData?.content?.audience || 'lp-investor');
+formData.append('investment_thesis', wizardData?.content?.brief || '');
+
+// Research requirements
+const researchRequirements = wizardData?.content?.research?.join(', ') || '';
+formData.append('research_requirements', researchRequirements);
+
+// Reference presentations - keep the same field name for all files
+if (wizardData?.referenceFiles) {
+    wizardData.referenceFiles.forEach((fileData: UploadedFile | null) => {
+        if (fileData?.file) {
+            // Use a consistent field name - n8n will group them
+            formData.append('reference_presentations', fileData.file, fileData.name);
+        }
+    });
+}
+
+// Financial files
+if (wizardData?.content?.financialFiles) {
+    wizardData.content.financialFiles.forEach((fileData: UploadedFile) => {
+        if (fileData.file) {
+            formData.append('financial_files', fileData.file, fileData.name);
+        }
+    });
+}
 
             // Send axios request
             const response = await axios.post(
-                'https://n8n.srv1291751.hstgr.cloud/webhook/generate-presentation',
+                N8N_URL,
                 formData,
                 {
                     headers: {
