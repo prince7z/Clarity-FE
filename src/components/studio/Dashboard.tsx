@@ -458,8 +458,10 @@ export default function Dashboard() {
                         <div className="flex items-center gap-3">
                             <div className="h-9 w-9 rounded-xl gradient-ai shadow-sm" aria-hidden="true" />
                             <div className="leading-tight">
+                                <a href="/">
                                 <div className="text-sm font-semibold text-foreground">Clarity AI</div>
                                 <div className="text-xs text-muted-foreground">Projects</div>
+                                </a>
                             </div>
                         </div>
 
@@ -478,13 +480,7 @@ export default function Dashboard() {
 
                         {/* Right: Actions */}
                         <div className="flex items-center gap-3">
-                            <Button
-                                onClick={scrollToPricing}
-                                variant="outline"
-                            >
-                                Pricing
-                            </Button>
-                            
+                                            
                             <Button
                                 onClick={() => {
                                     setCurrentView('wizard');

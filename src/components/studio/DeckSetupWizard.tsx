@@ -10,6 +10,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const N8N_URL = import.meta.env.VITE_N8N_URL;
 
@@ -40,7 +42,9 @@ import {
     Play,
     Clock,
     FileText,
-    Layers
+    Layers,
+    Presentation,
+    Eye
 } from 'lucide-react';
 
 const audienceTypes = [
@@ -180,12 +184,57 @@ function UploadZone({
 function Step1Upload({ onFilesChange }: { onFilesChange?: (files: (UploadedFile | null)[]) => void }) {
     const { uploadedFiles, setUploadedFiles } = useStudio();
     const [files, setFiles] = useState<(UploadedFile | null)[]>([null, null, null]);
+    const [showExistingModal, setShowExistingModal] = useState(false);
+    const [selectedExisting, setSelectedExisting] = useState<string | null>(null);
+    const [previewPPT, setPreviewPPT] = useState<string | null>(null);
+
+    const existingPPTs = [
+        { name: 'Strategic Investment Opportunity', file: 'Strategic-Investment-Opportunity.pptx', path: '/Strategic-Investment-Opportunity.pptx' },
+        { name: 'Swafinix Investment Opportunity', file: 'Swafinix-Investment-Opportunity.pptx', path: '/Swafinix-Investment-Opportunity.pptx' },
+        { name: 'Vaurlis Education', file: 'Vaurlis-Education.pptx', path: '/Vaurlis-Education.pptx' },
+    ];
 
     const handleFileDrop = (index: number, file: UploadedFile) => {
         const newFiles = [...files];
         newFiles[index] = file;
         setFiles(newFiles);
         onFilesChange?.(newFiles);
+    };
+
+    const handleSelectExisting = async () => {
+        if (selectedExisting) {
+            const selectedPPT = existingPPTs.find(ppt => ppt.file === selectedExisting);
+            if (selectedPPT) {
+                // Fetch the file from public folder
+                const response = await fetch(selectedPPT.path);
+                const blob = await response.blob();
+                const file = new File([blob], selectedPPT.file, { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+                
+                // Add to first empty slot
+                const newFiles = [...files];
+                const emptyIndex = newFiles.findIndex(f => f === null);
+                if (emptyIndex !== -1) {
+                    newFiles[emptyIndex] = {
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                        file: file,
+                    };
+                    setFiles(newFiles);
+                    onFilesChange?.(newFiles);
+                }
+                setShowExistingModal(false);
+                setSelectedExisting(null);
+                setPreviewPPT(null);
+            }
+        }
+    };
+
+    const getPreviewUrl = (path: string) => {
+        // Get the full URL for the PPT file
+        const fullUrl = `${window.location.origin}${path}`;
+        // Use Microsoft Office Online Viewer
+        return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fullUrl)}`;
     };
 
     const hasFiles = files.some(f => f !== null);
@@ -204,6 +253,17 @@ function Step1Upload({ onFilesChange }: { onFilesChange?: (files: (UploadedFile 
                 <p className="text-muted-foreground max-w-md mx-auto">
                     Upload 1-3 similar presentations that represent your ideal style. We'll learn their design language.
                 </p>
+            </div>
+
+            <div className="flex justify-center mb-4">
+                <Button 
+                    variant="outline" 
+                    onClick={() => setShowExistingModal(true)}
+                    className="gap-2"
+                >
+                    <Presentation className="w-4 h-4" />
+                    Use Existing PPT
+                </Button>
             </div>
 
             <div className="grid grid-cols-3 gap-6 max-w-md mx-auto">
@@ -241,6 +301,111 @@ function Step1Upload({ onFilesChange }: { onFilesChange?: (files: (UploadedFile 
                     </Badge>
                 </motion.div>
             )}
+
+            {/* Existing PPT Modal */}
+            <Dialog open={showExistingModal} onOpenChange={(open) => {
+                setShowExistingModal(open);
+                if (!open) {
+                    setPreviewPPT(null);
+                    setSelectedExisting(null);
+                }
+            }}>
+                <DialogContent className="max-w-6xl max-h-[90vh]">
+                    <DialogHeader>
+                        <DialogTitle>Select Existing Presentation</DialogTitle>
+                        <DialogDescription>
+                            Choose from our reference presentations to use as a style template.
+                        </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="grid gap-6 py-4" style={{ gridTemplateColumns: previewPPT ? '1fr 2fr' : '1fr' }}>
+                        <div className="space-y-3">
+                            {existingPPTs.map((ppt) => (
+                                <div
+                                    key={ppt.file}
+                                    className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${
+                                        selectedExisting === ppt.file
+                                            ? 'border-primary bg-primary/5'
+                                            : 'border-border hover:border-primary/30'
+                                    }`}
+                                >
+                                    <div 
+                                        className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 cursor-pointer"
+                                        onClick={() => setSelectedExisting(ppt.file)}
+                                    >
+                                        <Presentation className="h-6 w-6 text-primary" />
+                                    </div>
+                                    <div className="flex-1 cursor-pointer" onClick={() => setSelectedExisting(ppt.file)}>
+                                        <div className="font-semibold text-sm">{ppt.name}</div>
+                                        <div className="text-xs text-muted-foreground">{ppt.file}</div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setPreviewPPT(previewPPT === ppt.file ? null : ppt.file);
+                                            }}
+                                            className="gap-1"
+                                        >
+                                            <Eye className="h-4 w-4" />
+                                            {previewPPT === ppt.file ? 'Hide' : 'Preview'}
+                                        </Button>
+                                        {selectedExisting === ppt.file && (
+                                            <Check className="h-5 w-5 text-primary" />
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        
+                        {previewPPT && (
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 20 }}
+                                className="rounded-xl border border-border bg-muted/30 overflow-hidden"
+                            >
+                                <div className="bg-card border-b border-border px-4 py-2 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Eye className="h-4 w-4 text-primary" />
+                                        <span className="text-sm font-semibold">Live Preview</span>
+                                    </div>
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => setPreviewPPT(null)}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                <div className="relative" style={{ height: '500px' }}>
+                                    <iframe
+                                        src={getPreviewUrl(existingPPTs.find(p => p.file === previewPPT)?.path || '')}
+                                        className="w-full h-full"
+                                        frameBorder="0"
+                                        title="PPT Preview"
+                                    />
+                                </div>
+                            </motion.div>
+                        )}
+                    </div>
+                    
+                    <div className="flex justify-end gap-3 pt-4 border-t">
+                        <Button variant="outline" onClick={() => {
+                            setShowExistingModal(false);
+                            setPreviewPPT(null);
+                            setSelectedExisting(null);
+                        }}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSelectExisting} disabled={!selectedExisting}>
+                            Select
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
@@ -388,6 +553,8 @@ function Step3Content({
     const [briefText, setBriefText] = useState('');
     const [selectedResearch, setSelectedResearch] = useState<string[]>([]);
     const [financialFiles, setFinancialFiles] = useState<UploadedFile[]>([]);
+    const [dimension, setDimension] = useState('16:9');
+    const [slideCount, setSlideCount] = useState<number>(10);
 
     // Notify parent of data changes
     const updateParent = () => {
@@ -395,7 +562,9 @@ function Step3Content({
             audience: selectedAudience,
             brief: briefText,
             research: selectedResearch,
-            financialFiles: financialFiles
+            financialFiles: financialFiles,
+            dimension: dimension,
+            slide_count: slideCount
         });
     };
 
@@ -483,6 +652,39 @@ function Step3Content({
                                 const value = e.target.value;
                                 setLocalPresentationType(value);
                                 setTimeout(() => updateMeta({ presentationType: value }), 0);
+                            }}
+                            className="bg-background/50"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="dimension" className="text-xs text-muted-foreground">Slide Dimension</Label>
+                        <Select value={dimension} onValueChange={(value) => {
+                            setDimension(value);
+                            setTimeout(() => updateParent(), 0);
+                        }}>
+                            <SelectTrigger id="dimension" className="bg-background/50">
+                                <SelectValue placeholder="Select dimension" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="16:9">16:9 (Widescreen)</SelectItem>
+                                <SelectItem value="4:3">4:3 (Standard)</SelectItem>
+                                <SelectItem value="fluid">Fluid</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="slide-count" className="text-xs text-muted-foreground">Slide Count</Label>
+                        <Input
+                            id="slide-count"
+                            type="number"
+                            min="1"
+                            max="100"
+                            placeholder="e.g., 10"
+                            value={slideCount}
+                            onChange={(e) => {
+                                const value = parseInt(e.target.value) || 10;
+                                setSlideCount(value);
+                                setTimeout(() => updateParent(), 0);
                             }}
                             className="bg-background/50"
                         />
@@ -657,6 +859,8 @@ formData.append('company_name', wizardData?.companyName || 'Not provided');
 formData.append('presentation_type', wizardData?.presentationType || 'board presentation');
 formData.append('target_audience', wizardData?.content?.audience || 'lp-investor');
 formData.append('investment_thesis', wizardData?.content?.brief || '');
+formData.append('dimension', wizardData?.content?.dimension || '16:9');
+formData.append('slide_count', String(wizardData?.content?.slide_count || 10));
 
 // Research requirements
 const researchRequirements = wizardData?.content?.research?.join(', ') || '';
@@ -681,7 +885,7 @@ if (wizardData?.content?.financialFiles) {
     });
 }
 
-            // Send axios request
+            // Send axios request https://n8n.srv1291751.hstgr.cloud/webhook/generate-presentation
             const response = await axios.post(
                 "https://n8n.srv1291751.hstgr.cloud/webhook/generate-presentation",
                 formData,
@@ -728,30 +932,9 @@ if (wizardData?.content?.financialFiles) {
                 </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="">
                 {/* Slide Outline */}
-                <div className="bg-card rounded-2xl border border-border p-6">
-                    <h3 className="font-semibold mb-4 flex items-center gap-2">
-                        <Layers className="w-4 h-4 text-primary" />
-                        DECK PREVIEW (Outline)
-                    </h3>
-                    <div className="space-y-2 max-h-[320px] overflow-y-auto pr-2">
-                        {slideOutline.map((slide, index) => (
-                            <motion.div
-                                key={slide.num}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.05 }}
-                                className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
-                            >
-                                <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">
-                                    {slide.num}
-                                </span>
-                                <span className="text-sm">{slide.title}</span>
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
+
 
                 {/* Build Options */}
                 <div className="space-y-6">
@@ -760,7 +943,7 @@ if (wizardData?.content?.financialFiles) {
                             <Clock className="w-5 h-5 text-muted-foreground" />
                             <div>
                                 <p className="text-sm font-medium">Estimated Time</p>
-                                <p className="text-2xl font-bold text-primary">8-12 minutes</p>
+                                <p className="text-2xl font-bold text-primary">3-4 minutes</p>
                             </div>
                         </div>
                     </div>
@@ -836,9 +1019,8 @@ export default function DeckSetupWizard() {
 
     const steps = [
         { id: 1, title: 'Upload Style', component: Step1Upload },
-        { id: 2, title: 'Analyze Style', component: Step2AnalyzeStyle },
-        { id: 3, title: 'Add Content', component: Step3Content },
-        { id: 4, title: 'Preview & Build', component: Step4Preview },
+        { id: 2, title: 'Add Content', component: Step3Content },
+        { id: 3, title: 'Preview & Build', component: Step4Preview },
     ];
 
     const currentStep = steps[wizardStep - 1];
@@ -922,8 +1104,7 @@ export default function DeckSetupWizard() {
                             onFilesChange={(files) => setWizardData({ ...wizardData, referenceFiles: files })} 
                         />
                     )}
-                    {wizardStep === 2 && <Step2AnalyzeStyle />}
-                    {wizardStep === 3 && (
+                    {wizardStep === 2 && (
                         <Step3Content 
                             companyName={wizardData.companyName}
                             presentationType={wizardData.presentationType}
@@ -931,7 +1112,7 @@ export default function DeckSetupWizard() {
                             onDataChange={(data) => setWizardData((prev) => ({ ...prev, content: data }))} 
                         />
                     )}
-                    {wizardStep === 4 && <Step4Preview wizardData={wizardData} />}
+                    {wizardStep === 3 && <Step4Preview wizardData={wizardData} />}
                 </motion.div>
 
                 {/* Navigation */}

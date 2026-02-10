@@ -721,7 +721,7 @@ export default function EditorWorkspace() {
                                 <Sparkles className="w-4 h-4" />
                                 Ask Clarity AI
                             </Button>
-                            <Button variant="outline" size="sm" className="gap-2" onClick={() => openComingSoon('Export')}>
+                            <Button variant="outline" size="sm" className="gap-2" onClick={() => setShowExportModal(true)}>
                                 <Download className="w-4 h-4" />
                                 Export
                             </Button>
@@ -754,78 +754,7 @@ export default function EditorWorkspace() {
                 {/* Body */}
                 <div className="flex-1 min-h-0 flex">
                     {/* Left: Slide list + comments */}
-                    <div className="hidden lg:flex w-[320px] shrink-0 border-r border-border bg-background/60 backdrop-blur-xl flex-col">
-                        <div className="p-4 border-b border-border">
-                            <div className="flex items-center justify-between">
-                                <div className="font-semibold">Slides</div>
-                                <Button variant="ghost" size="sm" className="gap-2" onClick={() => openComingSoon('Add slide')}>
-                                    <Plus className="w-4 h-4" />
-                                    Add
-                                </Button>
-                            </div>
-                            <div className="text-xs text-muted-foreground">Select a slide to comment/edit</div>
-                        </div>
 
-                        <ScrollArea className="flex-1">
-                            <div className="p-3 space-y-2">
-                                {slides.map((s) => (
-                                    <button
-                                        key={s.number}
-                                        type="button"
-                                        onClick={() => setSelectedIframeSlide(s.number)}
-                                        className={`w-full text-left rounded-xl border px-3 py-2 transition-colors ${
-                                            selectedIframeSlide === s.number
-                                                ? 'border-primary bg-primary/10'
-                                                : 'border-border bg-background hover:bg-muted/60'
-                                        }`}
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-muted text-xs font-semibold">
-                                                    {s.number}
-                                                </span>
-                                                <span className="text-sm font-medium">{s.title}</span>
-                                            </div>
-                                            <span className="text-[10px] text-muted-foreground">Ready</span>
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                        </ScrollArea>
-
-                        <div className="border-t border-border p-4">
-                            <div className="flex items-center justify-between mb-2">
-                                <div className="font-semibold">Comments</div>
-                                <Badge className="bg-muted text-muted-foreground border-0">{comments.length}</Badge>
-                            </div>
-                            <div className="text-xs text-muted-foreground mb-3">Demo: comments queue changes (pending)</div>
-
-                            <div className="space-y-2 max-h-40 overflow-auto pr-1">
-                                {comments.length === 0 ? (
-                                    <div className="text-xs text-muted-foreground">No comments yet.</div>
-                                ) : (
-                                    comments.slice(0, 4).map((c) => (
-                                        <div key={c.id} className="rounded-xl border border-border bg-background p-3">
-                                            <div className="flex items-center justify-between">
-                                                <div className="text-xs font-semibold">Slide {c.slideNumber}</div>
-                                                <Badge className="bg-amber-500/10 text-amber-700 border-0">Pending</Badge>
-                                            </div>
-                                            <div className="mt-2 text-xs text-muted-foreground line-clamp-3">{c.text}</div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-
-                            <Button
-                                className="w-full mt-3 gap-2"
-                                variant="outline"
-                                onClick={() => setCommentDialogOpen(true)}
-                            >
-                                <MessageSquare className="w-4 h-4" />
-                                Add comment
-                            </Button>
-                        </div>
-                    </div>
 
                     {/* Center: iframe */}
                     <div className="flex-1 min-h-0 bg-muted/30 p-3 md:p-6">
@@ -928,6 +857,13 @@ export default function EditorWorkspace() {
                         </div>
                     </DialogContent>
                 </Dialog>
+
+                {/* Export Modal */}
+                <AnimatePresence>
+                    {showExportModal && (
+                        <ExportModal onClose={() => setShowExportModal(false)} />
+                    )}
+                </AnimatePresence>
             </div>
         );
     }

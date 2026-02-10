@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useStudio } from './StudioContext';
+import axios from 'axios';
 import {
     X,
     Download,
@@ -17,8 +18,12 @@ import {
     Loader2,
     CheckCircle2,
     Layers,
-    HardDrive
+    HardDrive,
+    AlertCircle
 } from 'lucide-react';
+
+const GAMMA_API_KEY = 'sk-gamma-yxIevBweJdS0A0dBB133cQSxG7efIGtOMVL3OEjeF4';
+const GAMMA_API_BASE = 'https://public-api.gamma.app/v1.0';
 
 interface ExportModalProps {
     onClose: () => void;
@@ -27,7 +32,7 @@ interface ExportModalProps {
 type ExportFormat = 'pptx' | 'pdf';
 
 export default function ExportModal({ onClose }: ExportModalProps) {
-    const { currentDeck } = useStudio();
+    const { currentDeck, pollingPresentationId } = useStudio();
     const [format, setFormat] = useState<ExportFormat>('pptx');
     const [fileName, setFileName] = useState(currentDeck?.name.replace(/\s+/g, '_') + '_Q2_2024' || 'Presentation');
     const [options, setOptions] = useState({
@@ -38,16 +43,102 @@ export default function ExportModal({ onClose }: ExportModalProps) {
     });
     const [isExporting, setIsExporting] = useState(false);
     const [exportComplete, setExportComplete] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [exportProgress, setExportProgress] = useState('Preparing export...');
 
-    const handleExport = () => {
+    const handleExport = async () => {
+        if (!pollingPresentationId) {
+            setError('No presentation ID found. Please generate a presentation first.');
+            return;
+        }
+
         setIsExporting(true);
-        setTimeout(() => {
+        setError(null);
+        setExportProgress('Requesting export from Gamma API...');
+
+        try {
+            // Step 1: Request export by calling generate API with exportAs parameter
+            setExportProgress('Creating ' + format.toUpperCase() + ' file...');
+            const exportResponse = await axios.post(
+                `${GAMMA_API_BASE}/generations`,
+                {
+                    inputText: 'Export existing presentation',
+                    textMode: 'preserve',
+                    format: 'presentation',
+                    exportAs: format, // 'pdf' or 'pptx'
+                    // Use the existing generation as a template if possible
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-KEY': GAMMA_API_KEY,
+                    },
+                }
+            );
+
+            const newGenerationId = exportResponse.data.generationId;
+            
+            // Step 2: Poll for the export to complete
+            setExportProgress('Processing export...');
+            let attempts = 0;
+            const maxAttempts = 60; // 5 minutes max (5 second intervals)
+            
+            const pollForExport = async (): Promise<string | null> => {
+                while (attempts < maxAttempts) {
+                    attempts++;
+                    setExportProgress(`Processing... (${attempts * 5}s)`);
+                    
+                    const statusResponse = await axios.get(
+                        `${GAMMA_API_BASE}/generations/${newGenerationId}`,
+                        {
+                            headers: {
+                                'X-API-KEY': GAMMA_API_KEY,
+                            },
+                        }
+                    );
+
+                    const { status, pdfUrl, pptxUrl } = statusResponse.data;
+
+                    if (status === 'completed') {
+                        // Return the appropriate URL based on format
+                        return format === 'pdf' ? pdfUrl : pptxUrl;
+                    } else if (status === 'failed') {
+                        throw new Error('Export failed');
+                    }
+
+                    // Wait 5 seconds before polling again
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                }
+                
+                throw new Error('Export timeout - please try again');
+            };
+
+            const downloadUrl = await pollForExport();
+
+            if (!downloadUrl) {
+                throw new Error('No download URL received');
+            }
+
+            // Step 3: Download the file
+            setExportProgress('Downloading file...');
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = `${fileName}.${format}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
             setIsExporting(false);
             setExportComplete(true);
             setTimeout(() => {
                 onClose();
-            }, 1500);
-        }, 2000);
+            }, 2000);
+
+        } catch (err: any) {
+            console.error('Export error:', err);
+            setError(err.response?.data?.message || err.message || 'Failed to export. Please try again.');
+            setIsExporting(false);
+        }
     };
 
     const toggleOption = (key: keyof typeof options) => {
@@ -117,6 +208,23 @@ export default function ExportModal({ onClose }: ExportModalProps) {
 
                         {/* Content */}
                         <div className="p-6 space-y-6">
+                            {/* Warning if no presentation ID */}
+                            {!pollingPresentationId && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20"
+                                >
+                                    <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                                    <div className="flex-1">
+                                        <p className="text-sm font-medium text-amber-600">No Presentation Generated</p>
+                                        <p className="text-sm text-amber-600/80 mt-1">
+                                            Please generate a presentation first before exporting.
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            )}
+
                             {/* Format Options */}
                             <div>
                                 <h3 className="text-sm font-medium mb-4">FORMAT OPTIONS</h3>
@@ -233,6 +341,21 @@ export default function ExportModal({ onClose }: ExportModalProps) {
                                 </div>
                             </div>
 
+                            {/* Error Display */}
+                            {error && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="flex items-start gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20"
+                                >
+                                    <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                                    <div className="flex-1">
+                                        <p className="text-sm font-medium text-destructive">Export Error</p>
+                                        <p className="text-sm text-destructive/80 mt-1">{error}</p>
+                                    </div>
+                                </motion.div>
+                            )}
+
                             {/* File Name */}
                             <div>
                                 <Label htmlFor="fileName" className="text-sm font-medium">
@@ -268,13 +391,13 @@ export default function ExportModal({ onClose }: ExportModalProps) {
                             </Button>
                             <Button
                                 onClick={handleExport}
-                                disabled={isExporting}
+                                disabled={isExporting || !pollingPresentationId}
                                 className="gap-2 px-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/25"
                             >
                                 {isExporting ? (
                                     <>
                                         <Loader2 className="w-4 h-4 animate-spin" />
-                                        Exporting...
+                                        {exportProgress}
                                     </>
                                 ) : (
                                     <>

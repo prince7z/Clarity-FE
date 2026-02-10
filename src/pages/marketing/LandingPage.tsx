@@ -64,15 +64,12 @@ export default function LandingPage() {
                 />
               </div>
 
-              <h1 className="text-balance text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
+              <h1 className="text-balance text-2xl font-semibold leading-tight tracking-tight md:text-4xl">
                 Generate investor-ready decks in minutes—
-                <span className="gradient-ai-text"> matching any reference style</span>.
+                <span className="gradient-ai-text"> matching any reference style</span>
               </h1>
 
-              <p className="max-w-xl text-pretty text-base text-muted-foreground md:text-lg">
-                Upload a reference PPT (or use a Reference ID), add your structured company data, and Clarity AI generates a clean,
-                enterprise-grade presentation with strong visuals, charts, and optional market insights.
-              </p>
+            
 
               <div className="flex flex-col gap-3 sm:flex-row">
                 <Button
@@ -112,7 +109,7 @@ export default function LandingPage() {
                     },
                   }}
                 >
-                  See pricing
+                  GoForDemo
                 </Button>
               </div>
 
@@ -217,9 +214,9 @@ export default function LandingPage() {
 
       {/* How it works */}
       <Section id="how-it-works">
-        <div className="grid gap-10 md:grid-cols-2 md:items-center">
+        <div className="items-center">
           <div className="space-y-3">
-            <h2 className="text-3xl font-semibold tracking-tight">How Clarity AI works</h2>
+            <h2 className="text-center text-3xl font-semibold tracking-tight">How Clarity AI works</h2>
             <p className="text-muted-foreground">
               Built for speed and consistency: you bring the story and the numbers, Clarity AI handles the design system and the slide
               craftsmanship.
@@ -560,150 +557,62 @@ export default function LandingPage() {
         </div>
       </Section>
 
-      {/* Pricing preview */}
-      <Section id="pricing-preview">
-        <div className="space-y-3 text-center">
-          <h2 className="text-3xl font-semibold tracking-tight">Pricing that scales with your deck volume</h2>
-          <p className="mx-auto max-w-2xl text-muted-foreground">Clear limits, stronger value at higher tiers, and enterprise controls when you need them.</p>
-        </div>
-
-        <div className="mt-10 grid gap-4 md:grid-cols-3">
-          {pricingPlans.map((plan) => (
-            <div
-              key={plan.name}
-              className={
-                plan.highlight
-                  ? "relative rounded-3xl border-2 border-primary bg-card/70 p-6 shadow-glass"
-                  : "relative rounded-3xl border border-border bg-card/70 p-6 shadow-glass"
-              }
-            >
-              {plan.highlight && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
-                  Most popular
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <div className="text-lg font-semibold">{plan.name}</div>
-                <div className="text-3xl font-semibold tracking-tight">{plan.priceLabel}</div>
-                <div className="text-sm text-muted-foreground">{plan.tagline}</div>
-              </div>
-
-              <div className="mt-5 space-y-3">
-                {plan.bullets.map((b) => (
-                  <div key={b} className="flex items-start gap-2 text-sm">
-                    <span className="mt-1 inline-block h-2 w-2 rounded-full bg-primary" />
-                    <span className="text-muted-foreground">{b}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-6">
-                <Button
-                  component={Link}
-                  to={plan.ctaHref}
-                  fullWidth
-                  variant={plan.highlight ? "contained" : "outlined"}
-                  disableElevation
-                  sx={{
-                    textTransform: "none",
-                    borderRadius: "14px",
-                    paddingY: 1.25,
-                    fontWeight: 800,
-                    ...(plan.highlight
-                      ? {
-                          background: "var(--gradient-ai)",
-                          "&:hover": { background: "var(--gradient-ai)", opacity: 0.92 },
-                        }
-                      : {
-                          borderColor: "hsl(var(--border))",
-                          color: "hsl(var(--foreground))",
-                          "&:hover": {
-                            borderColor: "hsl(var(--border))",
-                            backgroundColor: "hsl(var(--muted) / 0.6)",
-                          },
-                        }),
-                  }}
-                >
-                  {plan.ctaLabel}
-                </Button>
-
-                {plan.finePrint && <div className="mt-3 text-xs text-muted-foreground">{plan.finePrint}</div>}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-8 text-center">
-          <Link to="/pricing" className="text-sm font-semibold text-foreground hover:opacity-90">
-            Compare plans →
-          </Link>
-        </div>
-      </Section>
-
       {/* Trust */}
       <Section id="trust">
         <div className="grid gap-10 md:grid-cols-2 md:items-center">
           <div className="space-y-3">
-            <h2 className="text-3xl font-semibold tracking-tight">Credibility that feels enterprise-ready</h2>
-            <p className="text-muted-foreground">
-              Your deck is a decision artifact. Clarity AI optimizes for clarity, consistency, and the kind of visual confidence that wins
-              stakeholder trust.
-            </p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              {trustStats.map((s) => (
-                <div key={s.label} className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm">
-                  <div className="text-xs font-semibold text-muted-foreground">{s.label}</div>
-                  <div className="mt-1 text-lg font-semibold">{s.value}</div>
-                  <div className="mt-2 text-xs text-muted-foreground">{s.description}</div>
-                </div>
-              ))}
+        <h2 className="text-3xl font-semibold tracking-tight">Credibility that feels enterprise-ready</h2>
+        <p className="text-muted-foreground">
+          Your deck is a decision artifact. Clarity AI optimizes for clarity, consistency, and the kind of visual confidence that wins
+          stakeholder trust.
+        </p>
+        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          {trustStats.map((s) => (
+            <div key={s.label} className="rounded-2xl border border-border bg-card/70 p-4 shadow-sm">
+          <div className="text-xs font-semibold text-muted-foreground">{s.label}</div>
+          <div className="mt-1 text-lg font-semibold">{s.value}</div>
+          <div className="mt-2 text-xs text-muted-foreground">{s.description}</div>
             </div>
-          </div>
-
-          <div className="rounded-3xl border border-border bg-card/70 p-6 shadow-glass">
-            <div className="space-y-4">
-              <div className="text-sm font-semibold">What teams say</div>
-              <div className="space-y-4">
-                <div className="rounded-2xl bg-background/70 p-5">
-                  <div className="text-sm text-muted-foreground">
-                    “We used a previous investor deck as the reference and Clarity AI matched the style perfectly. The charts and layout quality
-                    saved us hours.”
-                  </div>
-                  <div className="mt-3 text-xs font-semibold">Founder, B2B SaaS</div>
-                </div>
-                <div className="rounded-2xl bg-background/70 p-5">
-                  <div className="text-sm text-muted-foreground">
-                    “The narrative flow and visual consistency made leadership reviews easier—less time formatting, more time refining the story.”
-                  </div>
-                  <div className="mt-3 text-xs font-semibold">Strategy Lead, Enterprise</div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between rounded-2xl border border-border bg-background/70 p-5">
-                <div className="space-y-1">
-                  <div className="text-sm font-semibold">Ready to ship your next deck?</div>
-                  <div className="text-sm text-muted-foreground">Start with your reference PPT and structured inputs.</div>
-                </div>
-                <Button
-                  component={Link}
-                  to="/sign-up"
-                  variant="contained"
-                  disableElevation
-                  sx={{
-                    textTransform: "none",
-                    borderRadius: "14px",
-                    fontWeight: 800,
-                    background: "var(--gradient-ai)",
-                    "&:hover": { background: "var(--gradient-ai)", opacity: 0.92 },
-                  }}
-                >
-                  Get started
-                </Button>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
+          </div>
+
+          <div className="space-y-4">
+        <div className="text-sm font-semibold">What teams say</div>
+        
+        {[
+          {
+            quote: "We used a previous investor deck as the reference and Clarity AI matched the style perfectly. The charts and layout quality saved us hours.",
+            author: "Founder, B2B SaaS",
+            initials: "FB",
+          },
+          {
+            quote: "The narrative flow and visual consistency made leadership reviews easier—less time formatting, more time refining the story.",
+            author: "Strategy Lead, Enterprise",
+            initials: "SL",
+          },
+        ].map((testimonial, idx) => (
+            <div
+              key={idx}
+              className="testimonial-card relative rounded-2xl border border-border bg-gradient-to-br from-primary/20 to-card/40 p-6 shadow-glass backdrop-blur-sm transition-transform duration-300 hover:-translate-y-2 hover:scale-105 hover:shadow-xl"
+              style={{ animation: `fadeInUp 0.7s ${0.1 + idx * 0.15}s both` }}
+            >
+              <div className="mb-4 flex items-start gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full gradient-ai text-sm font-bold text-white shadow-lg">
+                  {testimonial.initials}
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm font-semibold text-foreground">{testimonial.author}</div>
+                </div>
+              </div>
+              <p className="text-sm leading-relaxed text-muted-foreground italic">"{testimonial.quote}"</p>
+              {/* Animated gradient border effect */}
+              <span className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-transparent bg-gradient-to-r from-primary/30 via-transparent to-primary/10 opacity-60 blur-sm" />
+            </div>
+        ))}
+        </div>
+        </div>
+
       </Section>
 
       {/* CTA banner */}
