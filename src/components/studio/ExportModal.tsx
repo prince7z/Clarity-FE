@@ -32,6 +32,7 @@ interface ExportModalProps {
 type ExportFormat = 'pptx' | 'pdf';
 
 export default function ExportModal({ onClose }: ExportModalProps) {
+
     const { currentDeck, pollingPresentationId } = useStudio();
     const [format, setFormat] = useState<ExportFormat>('pptx');
     const [fileName, setFileName] = useState(currentDeck?.name.replace(/\s+/g, '_') + '_Q2_2024' || 'Presentation');
@@ -47,7 +48,10 @@ export default function ExportModal({ onClose }: ExportModalProps) {
     const [exportProgress, setExportProgress] = useState('Preparing export...');
 
     const handleExport = async () => {
-        if (!pollingPresentationId) {
+        // Prioritize current deck ID over polling ID to ensure we export the correct presentation
+        const presentationId = currentDeck?.id || pollingPresentationId;
+        
+        if (!presentationId) {
             setError('No presentation ID found. Please generate a presentation first.');
             return;
         }
@@ -57,7 +61,45 @@ export default function ExportModal({ onClose }: ExportModalProps) {
         setExportProgress('Requesting export from Gamma API...');
 
         try {
-            // Step 1: Request export by calling generate API with exportAs parameter
+            // Step 1: First, check if we can get the presentation status and export URLs
+            setExportProgress('Fetching presentation details...');
+            
+            // Get the existing presentation to check if it has export URLs already
+            const presentationResponse = await axios.get(
+                `${GAMMA_API_BASE}/generations/bxpTxRE8GgNy6etdNCxXy`,
+                {
+                    headers: {
+                        'X-API-KEY': GAMMA_API_KEY,
+                    },
+                }
+            );
+
+            const { status, pdfUrl, pptxUrl } = presentationResponse.data;
+            
+            // If the presentation is complete and has the export URL we need, use it directly
+            if (status === 'completed') {
+                const existingUrl = format === 'pdf' ? pdfUrl : pptxUrl;
+                
+                if (existingUrl) {
+                    // We already have the export URL, download it directly
+                    setExportProgress('Downloading file...');
+                    const link = document.createElement('a');
+                    link.href = existingUrl;
+                    link.download = `${fileName}.${format}`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    setIsExporting(false);
+                    setExportComplete(true);
+                    setTimeout(() => {
+                        onClose();
+                    }, 2000);
+                    return;
+                }
+            }
+            
+            // Step 2: If no export URL exists, request a new export by creating a generation with exportAs
             setExportProgress('Creating ' + format.toUpperCase() + ' file...');
             const exportResponse = await axios.post(
                 `${GAMMA_API_BASE}/generations`,
@@ -66,7 +108,7 @@ export default function ExportModal({ onClose }: ExportModalProps) {
                     textMode: 'preserve',
                     format: 'presentation',
                     exportAs: format, // 'pdf' or 'pptx'
-                    // Use the existing generation as a template if possible
+                    sourceGenerationId: presentationId, // Reference the existing presentation
                 },
                 {
                     headers: {
@@ -209,7 +251,7 @@ export default function ExportModal({ onClose }: ExportModalProps) {
                         {/* Content */}
                         <div className="p-6 space-y-6">
                             {/* Warning if no presentation ID */}
-                            {!pollingPresentationId && (
+                            {!pollingPresentationId && !currentDeck?.id && (
                                 <motion.div
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -370,18 +412,7 @@ export default function ExportModal({ onClose }: ExportModalProps) {
                             </div>
 
                             {/* File Info */}
-                            <div className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border">
-                                <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <Layers className="w-4 h-4 text-muted-foreground" />
-                                        <span>{currentDeck?.slides.length || 24} slides</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <HardDrive className="w-4 h-4 text-muted-foreground" />
-                                        <span>~4.2 MB</span>
-                                    </div>
-                                </div>
-                            </div>
+
                         </div>
 
                         {/* Footer */}
@@ -391,7 +422,7 @@ export default function ExportModal({ onClose }: ExportModalProps) {
                             </Button>
                             <Button
                                 onClick={handleExport}
-                                disabled={isExporting || !pollingPresentationId}
+                                disabled={isExporting || (!pollingPresentationId && !currentDeck?.id)}
                                 className="gap-2 px-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/25"
                             >
                                 {isExporting ? (
