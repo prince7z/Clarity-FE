@@ -15,7 +15,9 @@ import {
     CheckCircle2,
     Home,
     ExternalLink,
-    Eye
+    Eye,
+    Download,
+    Presentation
 } from 'lucide-react';
 import { useStudio } from './StudioContext';
 
@@ -43,6 +45,7 @@ export default function PresentationPolling({ presentationId, onComplete }: Pres
     const [progress, setProgress] = useState(0);
     const [isComplete, setIsComplete] = useState(false);
     const [presentationUrl, setPresentationUrl] = useState<string | null>(null);
+    const [exportUrl, setExportUrl] = useState<string | null>(null);
     const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -86,6 +89,9 @@ export default function PresentationPolling({ presentationId, onComplete }: Pres
             const urlColumnIndex = headers.findIndex((name: string) => 
                 name.toLowerCase() === 'presentation_url'
             );
+            const exportColumnIndex = headers.findIndex((name: string) => 
+                name.toLowerCase() === 'export_url'
+            );
 
             if (idColumnIndex === -1 || urlColumnIndex === -1) {
                 console.error('Required columns not found in sheet. Headers:', headers);
@@ -99,9 +105,10 @@ export default function PresentationPolling({ presentationId, onComplete }: Pres
                 
                 const rowPresentationId = cells[idColumnIndex]?.v;
                 const rowUrl = cells[urlColumnIndex]?.v;
+                const rowExportUrl = exportColumnIndex !== -1 ? cells[exportColumnIndex]?.v : null;
 
-                if (rowPresentationId === presentationId && rowUrl) {
-                    return rowUrl;
+                if (rowPresentationId === presentationId && (rowUrl || rowExportUrl)) {
+                    return { presentationUrl: rowUrl, exportUrl: rowExportUrl };
                 }
             }
 
@@ -115,9 +122,10 @@ export default function PresentationPolling({ presentationId, onComplete }: Pres
     // Start polling
     useEffect(() => {
         const poll = async () => {
-            const url = await pollForPresentationUrl();
-            if (url) {
-                setPresentationUrl(url);
+            const result = await pollForPresentationUrl();
+            if (result && (result.presentationUrl || result.exportUrl)) {
+                setPresentationUrl(result.presentationUrl);
+                setExportUrl(result.exportUrl);
                 setIsComplete(true);
                 setProgress(100);
                 if (pollingIntervalRef.current) {
@@ -185,9 +193,32 @@ export default function PresentationPolling({ presentationId, onComplete }: Pres
                 buildProgress: 100,
                 status: 'ready',
                 iframeUrl: presentationUrl,
+                exportUrl: exportUrl || undefined,
             });
             setCurrentView('editor');
             onComplete(presentationUrl);
+        }
+    };
+
+    const handleDownload = () => {
+        if (exportUrl) {
+            const link = document.createElement('a');
+            link.href = exportUrl;
+            link.download = 'Generated-Presentation.pptx';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    };
+
+    const handleOpenInPowerPoint = () => {
+        if (exportUrl) {
+            // Use Microsoft PowerPoint protocol handler to open directly in PowerPoint app
+            // Format: ms-powerpoint:ofv|u|{url}
+            const powerPointProtocol = `ms-powerpoint:ofv|u|${exportUrl}`;
+            
+            // Try to open with protocol handler
+            window.location.href = powerPointProtocol;
         }
     };
 
@@ -356,6 +387,29 @@ export default function PresentationPolling({ presentationId, onComplete }: Pres
                                         <Eye className="w-4 h-4" />
                                         View in Editor
                                     </Button>
+                                    
+                                    {/* Download and PowerPoint buttons - only show if exportUrl exists */}
+                                    {exportUrl && (
+                                        <div className="flex gap-3">
+                                            <Button
+                                                onClick={handleOpenInPowerPoint}
+                                                variant="default"
+                                                className="flex-1 gap-2 h-12"
+                                            >
+                                                <Presentation className="w-4 h-4" />
+                                                Open in PowerPoint
+                                            </Button>
+                                            <Button
+                                                onClick={handleDownload}
+                                                variant="outline"
+                                                className="flex-1 gap-2 h-12"
+                                            >
+                                                <Download className="w-4 h-4" />
+                                                Download
+                                            </Button>
+                                        </div>
+                                    )}
+                                    
                                     <div className="flex gap-3">
                                         <Button
                                             variant="outline"
