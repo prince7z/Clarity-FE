@@ -339,6 +339,7 @@ interface SheetPresentation {
     presentationType: string;
     status: 'queued' | 'completed';
     presentationUrl: string | null;
+    exportUrl: string | null;
     createdAt: string;
 }
 
@@ -377,6 +378,7 @@ export default function Dashboard() {
             const typeIndex = headers.findIndex((h: string) => h.toLowerCase() === 'presentation_type');
             const statusIndex = headers.findIndex((h: string) => h.toLowerCase() === 'status');
             const urlIndex = headers.findIndex((h: string) => h.toLowerCase() === 'presentation_url');
+            const exportIndex = headers.findIndex((h: string) => h.toLowerCase() === 'export_url');
             const createdIndex = headers.findIndex((h: string) => h.toLowerCase() === 'created_at');
 
             const presentations: SheetPresentation[] = [];
@@ -392,8 +394,9 @@ export default function Dashboard() {
                 const companyName = cells[companyIndex]?.v || 'Untitled';
                 const presentationType = cells[typeIndex]?.v || 'Presentation';
                 const presentationUrl = cells[urlIndex]?.v || null;
+                const exportUrl = cells[exportIndex]?.v || null;
                 const createdAt = cells[createdIndex]?.v || '';
-                const status = presentationUrl ? 'completed' : 'queued';
+                const status = (presentationUrl || exportUrl) ? 'completed' : 'queued';
 
                 presentations.push({
                     presentationId,
@@ -401,6 +404,7 @@ export default function Dashboard() {
                     presentationType,
                     status,
                     presentationUrl,
+                    exportUrl,
                     createdAt,
                 });
             }
@@ -423,8 +427,8 @@ export default function Dashboard() {
     );
 
     const handlePresentationClick = (presentation: SheetPresentation) => {
-        if (presentation.status === 'completed' && presentation.presentationUrl) {
-            // Load deck with iframe URL
+        if (presentation.status === 'completed' && (presentation.presentationUrl || presentation.exportUrl)) {
+            // Load deck with iframe URL or export URL
             setCurrentDeck({
                 id: presentation.presentationId,
                 name: `${presentation.companyName} - ${presentation.presentationType}`,
@@ -443,7 +447,8 @@ export default function Dashboard() {
                 slides: [],
                 buildProgress: 100,
                 status: 'ready',
-                iframeUrl: presentation.presentationUrl, // Add iframe URL
+                iframeUrl: presentation.presentationUrl, // Gamma embed URL
+                exportUrl: presentation.exportUrl, // Direct PPTX download URL
             });
             setCurrentView('editor');
         }

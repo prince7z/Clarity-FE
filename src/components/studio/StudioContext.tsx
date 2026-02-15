@@ -46,6 +46,7 @@ export interface CurrentDeck {
     buildProgress: number;
     status: 'building' | 'ready' | 'editing';
     iframeUrl?: string; // Optional iframe URL for Gamma presentations
+    exportUrl?: string; // Optional direct download URL for PPTX file
 }
 
 interface StudioContextType {

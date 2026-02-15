@@ -23,7 +23,7 @@ export default function FeaturesPage() {
             <div className="flex flex-wrap items-center gap-2">
               <Chip
                 size="small"
-                label="Enterprise-grade output"
+                label="AI-powered generation"
                 sx={{
                   borderRadius: "999px",
                   backgroundColor: "hsl(var(--card) / 0.7)",
@@ -34,7 +34,7 @@ export default function FeaturesPage() {
               />
               <Chip
                 size="small"
-                label="Reference-style matching"
+                label="Market analysis included"
                 sx={{
                   borderRadius: "999px",
                   backgroundColor: "hsl(var(--card) / 0.7)",
@@ -46,12 +46,11 @@ export default function FeaturesPage() {
             </div>
 
             <h1 className="text-balance text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
-              Features built to ship decks faster—
-              <span className="gradient-ai-text"> without sacrificing polish</span>.
+              AI that turns your ideas into
+              <span className="gradient-ai-text"> polished PowerPoint presentations</span>.
             </h1>
             <p className="text-pretty text-base text-muted-foreground md:text-lg">
-              Clarity AI takes a reference PPT (or Reference ID), extracts the design language, then generates a clean slide narrative from
-              structured inputs and data.
+              Clarity AI generates professional PowerPoint presentations from your descriptions, reference decks, or templates—complete with deep market analysis and full customization control.
             </p>
 
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -103,33 +102,33 @@ export default function FeaturesPage() {
         <div className="grid gap-4 md:grid-cols-3">
           {[
             {
-              title: "Reference style extraction",
-              desc: "Clarity AI reads typography, layout rules, spacing, and color systems from your reference deck.",
+              title: "AI-powered generation",
+              desc: "Describe what you need in plain text and Clarity AI generates a complete PowerPoint presentation instantly.",
+              icon: <Sparkles className="h-5 w-5 text-primary" />,
+            },
+            {
+              title: "Reference-based creation",
+              desc: "Upload your reference deck and we'll create a new presentation matching the exact style, layout, and design language.",
               icon: <Brush className="h-5 w-5 text-primary" />,
             },
             {
-              title: "Slide blueprint generation",
-              desc: "Transforms structured inputs into a coherent deck narrative: problem, solution, market, traction, and ask.",
-              icon: <LayoutTemplate className="h-5 w-5 text-primary" />,
-            },
-            {
-              title: "Data-to-charts",
-              desc: "Converts financials and sheet-style data into clean, board-ready charts and KPIs.",
-              icon: <BarChart3 className="h-5 w-5 text-primary" />,
-            },
-            {
-              title: "Market insights on demand",
-              desc: "Request market analysis or macro context; we integrate the findings into supporting slides.",
+              title: "Deep market analysis",
+              desc: "Automated market research and competitive analysis integrated directly into your presentation slides.",
               icon: <Search className="h-5 w-5 text-primary" />,
             },
             {
-              title: "Structured inputs",
-              desc: "Company name, vision/goal, investors, business description, and optional market + financial inputs.",
+              title: "Professional templates",
+              desc: "Choose from our library of presentation templates for pitch decks, LP updates, board materials, and more.",
+              icon: <LayoutTemplate className="h-5 w-5 text-primary" />,
+            },
+            {
+              title: "Full customization control",
+              desc: "Set your preferred dimensions, slide count, layout preferences, and formatting—you're in complete control.",
               icon: <FileSpreadsheet className="h-5 w-5 text-primary" />,
             },
             {
               title: "Export-ready output",
-              desc: "Produces a polished PPT draft that’s ready for stakeholders, iterations, and presentation.",
+              desc: "Download professional PPTX files ready for presentation, editing in PowerPoint, or sharing with stakeholders.",
               icon: <Presentation className="h-5 w-5 text-primary" />,
             },
           ].map((item) => (
@@ -150,34 +149,33 @@ export default function FeaturesPage() {
       <Section>
         <div className="grid gap-10 md:grid-cols-2 md:items-center">
           <div className="space-y-3">
-            <h2 className="text-3xl font-semibold tracking-tight">From reference → enterprise deck</h2>
+            <h2 className="text-3xl font-semibold tracking-tight">Three ways to create presentations</h2>
             <p className="text-muted-foreground">
-              The fastest path to a professional PPT is consistency. Clarity AI starts with the design language and builds the deck around
-              it.
+              Whether you start from scratch, use a reference deck, or choose a template—Clarity AI generates professional presentations tailored to your needs.
             </p>
           </div>
 
           <div className="grid gap-4">
             {[
               {
-                title: "Add a reference PPT or Reference ID",
-                desc: "Clarity AI extracts style components and layout patterns.",
-                icon: <FileUp className="h-5 w-5 text-primary" />,
-              },
-              {
-                title: "Provide structured inputs",
-                desc: "Company narrative + business description + investors + optional market and financial data.",
+                title: "Describe what you need",
+                desc: "Tell Clarity AI about your presentation in plain text—our AI generates complete slides with content and visuals.",
                 icon: <Sparkles className="h-5 w-5 text-primary" />,
               },
               {
-                title: "Generate a deck built to persuade",
-                desc: "We deliver a clean, data-driven PPT draft with consistent visuals and charts.",
-                icon: <Presentation className="h-5 w-5 text-primary" />,
+                title: "Upload a reference deck",
+                desc: "Share an existing presentation and we'll create new slides matching its exact design, colors, and layout style.",
+                icon: <FileUp className="h-5 w-5 text-primary" />,
               },
               {
-                title: "Governance for teams",
-                desc: "Enterprise plans support controls like RBAC and SSO-ready workflows.",
-                icon: <Lock className="h-5 w-5 text-primary" />,
+                title: "Start from templates",
+                desc: "Choose from professional templates for investor pitches, LP reports, quarterly reviews, or board presentations.",
+                icon: <LayoutTemplate className="h-5 w-5 text-primary" />,
+              },
+              {
+                title: "Customize everything",
+                desc: "Control slide dimensions, count, layout, and formatting. Add market analysis and data visualizations as needed.",
+                icon: <FileSpreadsheet className="h-5 w-5 text-primary" />,
               },
             ].map((s, idx) => (
               <div key={s.title} className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
@@ -202,8 +200,8 @@ export default function FeaturesPage() {
             <div className="absolute inset-0 gradient-ai-subtle" aria-hidden="true" />
             <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="space-y-1">
-                <div className="text-2xl font-semibold">Ready to generate a deck?</div>
-                <div className="text-sm text-muted-foreground">Bring a reference PPT and ship a stakeholder-ready draft.</div>
+                <div className="text-2xl font-semibold">Ready to create your presentation?</div>
+                <div className="text-sm text-muted-foreground">Start with a description, reference deck, or template—get a professional PowerPoint in minutes.</div>
               </div>
               <Button
                 component={Link}

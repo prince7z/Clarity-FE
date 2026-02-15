@@ -654,7 +654,132 @@ export default function EditorWorkspace() {
     const [comments, setComments] = useState<SlideComment[]>([]);
     const [commentDialogOpen, setCommentDialogOpen] = useState(false);
     
-    // If deck has iframe URL, show iframe view
+    // If deck has export URL (downloadable PPTX), show preview with download options
+    if (currentDeck?.exportUrl) {
+        const handleDownload = () => {
+            const link = document.createElement('a');
+            link.href = currentDeck.exportUrl!;
+            link.download = `${currentDeck.name}.pptx`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        const handleOpenInPowerPoint = () => {
+            // Use Microsoft PowerPoint protocol handler to open directly in PowerPoint app
+            // Format: ms-powerpoint:ofv|u|{url}
+            const powerPointProtocol = `ms-powerpoint:ofv|u|${currentDeck.exportUrl}`;
+            
+            // Try to open with protocol handler
+            window.location.href = powerPointProtocol;
+            
+
+        };
+
+        // Use Microsoft Office Online viewer for preview
+        const previewUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(currentDeck.exportUrl)}`;
+
+        return (
+            <div className="flex-1 min-h-[calc(100vh-0px)] flex flex-col bg-background">
+                {/* Header */}
+                <div className="shrink-0 border-b border-border bg-background/80 backdrop-blur-xl">
+                    <div className="flex items-center justify-between px-4 md:px-6 py-3">
+                        <div className="flex items-center gap-4">
+                            <Button variant="ghost" size="sm" onClick={() => setCurrentView('dashboard')} className="gap-2">
+                                <ChevronLeft className="w-4 h-4" />
+                                Back
+                            </Button>
+                            <Separator orientation="vertical" className="h-6" />
+                            <div className="flex items-center gap-2">
+                                <Presentation className="w-5 h-5 text-primary" />
+                                <h1 className="font-semibold">{currentDeck.name}</h1>
+                            </div>
+                            <Badge variant="secondary" className="gap-1.5 bg-emerald-500/10 text-emerald-600">
+                                <CheckCircle2 className="w-3 h-3" />
+                                Ready
+                            </Badge>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <Button onClick={handleOpenInPowerPoint} variant="default" className="gap-2">
+                                <Presentation className="w-4 h-4" />
+                                Open in PowerPoint
+                            </Button>
+                            <Button onClick={handleDownload} variant="outline" className="gap-2">
+                                <Download className="w-4 h-4" />
+                                Download
+                            </Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                        <MoreHorizontal className="w-4 h-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={handleOpenInPowerPoint}>
+                                        <Presentation className="w-4 h-4 mr-2" />
+                                        Open in PowerPoint
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={handleDownload}>
+                                        <Download className="w-4 h-4 mr-2" />
+                                        Download PPTX
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => window.open(currentDeck.exportUrl!, '_blank')}>
+                                        <ExternalLink className="w-4 h-4 mr-2" />
+                                        Open in New Tab
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => window.open(previewUrl, '_blank')}>
+                                        <Eye className="w-4 h-4 mr-2" />
+                                        Open Preview in New Tab
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Body - Preview */}
+                <div className="flex-1 min-h-0 bg-muted/30 p-3 md:p-6">
+                    <div className="h-full bg-background rounded-xl border border-border shadow-lg overflow-hidden">
+                        <iframe
+                            src={previewUrl}
+                            className="w-full h-full"
+                            title="PowerPoint Preview"
+                            frameBorder="0"
+                        />
+                    </div>
+                </div>
+
+                {/* Footer with actions */}
+                <div className="shrink-0 border-t border-border bg-background/80 backdrop-blur-xl p-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <Badge variant="secondary" className="gap-1">
+                                <FileText className="w-3 h-3" />
+                                PPTX Format
+                            </Badge>
+                            <span className="text-sm text-muted-foreground">
+                                Preview powered by Microsoft Office Online
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button onClick={handleOpenInPowerPoint} className="gap-2 bg-gradient-to-r from-primary to-primary/80">
+                                <Presentation className="w-4 h-4" />
+                                Open in PowerPoint
+                            </Button>
+                            <Button onClick={handleDownload} variant="outline" className="gap-2">
+                                <Download className="w-4 h-4" />
+                                Download
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // If deck has iframe URL (Gamma embed), show iframe view
     if (currentDeck?.iframeUrl) {
         const embedUrl = getEmbedUrl(currentDeck.iframeUrl);
 

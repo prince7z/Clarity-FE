@@ -11,6 +11,7 @@ import {
   LineChart,
   MessageSquare,
   Presentation,
+  Settings,
   ShieldCheck,
   Sparkles,
   User,
@@ -93,7 +94,7 @@ export default function LandingPage() {
 
                 <Button
                   component={Link}
-                  to="/pricing"
+                  to="/"
                   variant="outlined"
                   disableElevation
                   sx={{
@@ -263,58 +264,43 @@ export default function LandingPage() {
       {/* Features */}
       <Section id="features">
         <div className="space-y-3 text-center">
-          <h2 className="text-3xl font-semibold tracking-tight">Built for enterprise-grade decks</h2>
+          <h2 className="text-3xl font-semibold tracking-tight">Everything you need to create presentations</h2>
           <p className="mx-auto max-w-2xl text-muted-foreground">
-            Modern visuals, clean hierarchy, and data clarity—without spending hours nudging boxes in PowerPoint.
+            From AI-powered generation to deep market analysis—professional PowerPoint presentations in minutes, not hours.
           </p>
         </div>
 
         <div className="mt-10 grid gap-4 md:grid-cols-3">
           {[
             {
-              title: "Style & layout extraction",
-              desc: "Matches your reference deck: typography, spacing, layout rules, and color theme.",
-              icon: <Brush className="h-5 w-5 text-primary" />,
-            },
-            {
-              title: "AI-powered live editing",
-              desc: "Tap any element and tell the AI what to change. Instant preview, smart suggestions, and no manual formatting.",
-              icon: <MessageSquare className="h-5 w-5 text-primary" />,
-            },
-            {
-              title: "Charts that tell the story",
-              desc: "Turn sheet-like inputs into clear graphs, comparisons, and KPIs. AI picks the best visualization type.",
-              icon: <LineChart className="h-5 w-5 text-primary" />,
-            },
-            {
-              title: "Market & economy insights",
-              desc: "Request market analysis and relevant macro context—integrated directly into slides with citations.",
-              icon: <Gauge className="h-5 w-5 text-primary" />,
-            },
-            {
-              title: "Narrative-ready slide structures",
-              desc: "Problem → solution → traction → financials → ask, assembled in a clean flow.",
-              icon: <Presentation className="h-5 w-5 text-primary" />,
-            },
-            {
-              title: "Real-time collaboration",
-              desc: "Edit together, leave comments, and review changes with version history across the whole deck.",
-              icon: <Users2 className="h-5 w-5 text-primary" />,
-            },
-            {
-              title: "Smart content suggestions",
-              desc: "Improve clarity, tighten language, and optimize slide layouts for your audience—automatically.",
+              title: "AI-powered generation",
+              desc: "Describe your presentation needs in plain text and let AI create complete slides with content and visuals.",
               icon: <Sparkles className="h-5 w-5 text-primary" />,
             },
             {
-              title: "Presentation templates",
-              desc: "Board decks, LP updates, pitch decks, QBRs—built-in structures you can customize and reuse.",
+              title: "Reference-based creation",
+              desc: "Upload an existing deck and we'll match its design language—typography, colors, spacing, and layout.",
+              icon: <Brush className="h-5 w-5 text-primary" />,
+            },
+            {
+              title: "Deep market analysis",
+              desc: "Automated market research and competitive analysis integrated directly into your slides with data-backed insights.",
+              icon: <Gauge className="h-5 w-5 text-primary" />,
+            },
+            {
+              title: "Professional templates",
+              desc: "Start with templates for pitch decks, LP updates, board materials, quarterly reviews, and more.",
               icon: <LayoutTemplate className="h-5 w-5 text-primary" />,
             },
             {
-              title: "Enterprise controls",
-              desc: "Governance-ready workflows for large teams (SSO/RBAC/audit trails/approvals on Enterprise).",
-              icon: <ShieldCheck className="h-5 w-5 text-primary" />,
+              title: "Full customization",
+              desc: "Control dimensions, slide count, layouts, and formatting—customize every aspect to match your needs.",
+              icon: <Settings className="h-5 w-5 text-primary" />,
+            },
+            {
+              title: "Export to PowerPoint",
+              desc: "Download professional PPTX files ready for presentation, further editing, or sharing with stakeholders.",
+              icon: <Presentation className="h-5 w-5 text-primary" />,
             },
           ].map((item) => (
             <div key={item.title} className="glass-card rounded-2xl p-6 shadow-glass">
@@ -350,8 +336,101 @@ export default function LandingPage() {
         </div>
       </Section>
 
-      {/* AI Live Editing */}
-      <Section id="ai-editing">
+      {/* How It Works */}
+      <Section id="how-it-works">
+        <div className="relative overflow-hidden rounded-3xl border border-border bg-card/70 p-10 shadow-glass md:p-14">
+          <div className="absolute inset-0 gradient-ai-subtle" aria-hidden="true" />
+          <div className="relative">
+            <div className="text-center space-y-3 mb-12">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
+                <Sparkles className="h-4 w-4" />
+                Three Ways to Create
+              </div>
+              <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
+                Start from <span className="gradient-ai-text">anywhere</span>
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Whether you have a clear vision, an existing deck to match, or want to start from a template—Clarity AI has you covered.
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              <div className="space-y-4 p-6 rounded-2xl border border-border bg-background/50">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                  <MessageSquare className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold">Describe Your Needs</h3>
+                <p className="text-sm text-muted-foreground">
+                  Tell us what you need: "Create a pitch deck for a fintech startup" or "LP update for Q4 2024"—our AI generates complete slides with content and visuals.
+                </p>
+                <div className="pt-2">
+                  <div className="inline-flex items-center gap-2 text-xs font-medium text-primary">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    AI-powered generation
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4 p-6 rounded-2xl border border-border bg-background/50">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                  <FileUp className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold">Upload a Reference</h3>
+                <p className="text-sm text-muted-foreground">
+                  Share an existing presentation and we'll analyze its design language—matching typography, colors, spacing, and layout for brand consistency.
+                </p>
+                <div className="pt-2">
+                  <div className="inline-flex items-center gap-2 text-xs font-medium text-primary">
+                    <Brush className="h-3.5 w-3.5" />
+                    Style matching
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4 p-6 rounded-2xl border border-border bg-background/50">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                  <LayoutTemplate className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold">Choose a Template</h3>
+                <p className="text-sm text-muted-foreground">
+                  Start with professional templates for investor pitches, board materials, LP reports, or quarterly reviews—customize to fit your story.
+                </p>
+                <div className="pt-2">
+                  <div className="inline-flex items-center gap-2 text-xs font-medium text-primary">
+                    <LayoutTemplate className="h-3.5 w-3.5" />
+                    Pre-built structures
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-10 text-center">
+              <p className="text-sm text-muted-foreground mb-4">Every method includes deep market analysis and full customization control</p>
+              <Button
+                component={Link}
+                to="/studio"
+                variant="contained"
+                disableElevation
+                endIcon={<ArrowRight className="h-4 w-4" />}
+                sx={{
+                  textTransform: "none",
+                  borderRadius: "14px",
+                  paddingX: 3,
+                  paddingY: 1.5,
+                  fontWeight: 800,
+                  background: "var(--gradient-ai)",
+                  "&:hover": { background: "var(--gradient-ai)", opacity: 0.92 },
+                }}
+              >
+                Try it now
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* Advanced Features */}
+      <Section id="advanced-features">
         <div className="relative overflow-hidden rounded-3xl border border-border bg-card/70 p-10 shadow-glass md:p-14">
           <div className="absolute inset-0 gradient-ai-subtle" aria-hidden="true" />
           <div className="relative grid gap-10 md:grid-cols-2 md:items-center">
@@ -458,21 +537,20 @@ export default function LandingPage() {
       {/* Advanced Features */}
       <Section id="advanced-features">
         <div className="space-y-3 text-center">
-          <h2 className="text-3xl font-semibold tracking-tight">Advanced capabilities for enterprise teams</h2>
+          <h2 className="text-3xl font-semibold tracking-tight">Powered by AI, designed for professionals</h2>
           <p className="mx-auto max-w-2xl text-muted-foreground">
-            Built-in intelligence that goes beyond templates—real AI that understands context, brand, and business narrative.
+            Advanced features that understand your business context and deliver presentations that look professionally designed.
           </p>
         </div>
 
         <div className="mt-10 grid gap-4 md:grid-cols-2">
           <div className="glass-card rounded-2xl p-6 shadow-glass">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <BarChart3 className="h-6 w-6 text-primary" />
+              <Sparkles className="h-6 w-6 text-primary" />
             </div>
-            <h3 className="mb-2 text-lg font-semibold">Intelligent data visualization</h3>
+            <h3 className="mb-2 text-lg font-semibold">Natural language generation</h3>
             <p className="text-sm text-muted-foreground">
-              AI automatically selects the best chart type for your data—whether it's showing trends, comparisons, or
-              distributions.
+              Simply describe what you need and AI creates complete presentations with relevant content, layout, and visuals.
             </p>
           </div>
 
@@ -480,30 +558,29 @@ export default function LandingPage() {
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
               <Brush className="h-6 w-6 text-primary" />
             </div>
-            <h3 className="mb-2 text-lg font-semibold">Brand consistency enforcement</h3>
+            <h3 className="mb-2 text-lg font-semibold">Style consistency</h3>
             <p className="text-sm text-muted-foreground">
-              Upload a reference deck once. Every generated slide follows typography, spacing, colors, and layout rules
-              automatically.
+              Upload a reference deck and every generated slide follows its typography, spacing, colors, and layout rules automatically.
             </p>
           </div>
 
           <div className="glass-card rounded-2xl p-6 shadow-glass">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <Sparkles className="h-6 w-6 text-primary" />
+              <Gauge className="h-6 w-6 text-primary" />
             </div>
-            <h3 className="mb-2 text-lg font-semibold">Context-aware content generation</h3>
+            <h3 className="mb-2 text-lg font-semibold">Market intelligence</h3>
             <p className="text-sm text-muted-foreground">
-              Clarity AI understands your industry, audience, and narrative flow—suggesting content that fits your story.
+              Automated research and market analysis integrated into your presentations—delivering data-backed insights and competitive context.
             </p>
           </div>
 
           <div className="glass-card rounded-2xl p-6 shadow-glass">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <ShieldCheck className="h-6 w-6 text-primary" />
+              <LayoutTemplate className="h-6 w-6 text-primary" />
             </div>
-            <h3 className="mb-2 text-lg font-semibold">Version control & collaboration</h3>
+            <h3 className="mb-2 text-lg font-semibold">Template library</h3>
             <p className="text-sm text-muted-foreground">
-              Track changes, compare versions, and collaborate in real-time. Enterprise includes approvals and audit trails.
+              Professional templates for every use case—investor pitches, board materials, LP updates, and quarterly reviews.
             </p>
           </div>
         </div>
