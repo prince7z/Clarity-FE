@@ -40,7 +40,14 @@ const loadingMessages = [
 ];
 
 export default function PresentationPolling({ presentationId, onComplete }: PresentationPollingProps) {
-    const { setCurrentView, setCurrentDeck } = useStudio();
+    const { 
+        setCurrentView, 
+        setCurrentDeck, 
+        setWizardStep, 
+        setUploadedFiles, 
+        setExtractedStyle, 
+        setDeckContent 
+    } = useStudio();
     const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
     const [progress, setProgress] = useState(0);
     const [isComplete, setIsComplete] = useState(false);
@@ -224,6 +231,40 @@ export default function PresentationPolling({ presentationId, onComplete }: Pres
 
     const handleGoToDashboard = () => {
         setCurrentView('dashboard');
+    };
+
+    const handleGenerateNew = () => {
+        // Reset all local states to initial values
+        setCurrentMessageIndex(0);
+        setProgress(0);
+        setIsComplete(false);
+        setPresentationUrl(null);
+        setExportUrl(null);
+        
+        // Clear any active intervals/timeouts
+        if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+        }
+        if (messageTimeoutRef.current) {
+            clearTimeout(messageTimeoutRef.current);
+            messageTimeoutRef.current = null;
+        }
+        
+        // Reset all wizard-related context states
+        setWizardStep(1);
+        setUploadedFiles([]);
+        setExtractedStyle(null);
+        setDeckContent({
+            audience: '',
+            brief: '',
+            financialData: [],
+            researchOptions: [],
+        });
+        setCurrentDeck(null);
+        
+        // Navigate to wizard to start fresh from step 1
+        setCurrentView('wizard');
     };
 
     return (
@@ -428,6 +469,16 @@ export default function PresentationPolling({ presentationId, onComplete }: Pres
                                             Dashboard
                                         </Button>
                                     </div>
+                                    
+                                    {/* Generate New Presentation */}
+                                    <Button
+                                        onClick={handleGenerateNew}
+                                        variant="secondary"
+                                        className="w-full gap-2 h-12 mt-2"
+                                    >
+                                        <Sparkles className="w-4 h-4" />
+                                        Generate New Presentation
+                                    </Button>
                                 </div>
                             </motion.div>
                         )}

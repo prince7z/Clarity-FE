@@ -180,20 +180,43 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
 }
 
 function CreateNewSection() {
-    const { setCurrentView, setWizardStep } = useStudio();
+    const { 
+        setCurrentView, 
+        setWizardStep,
+        setUploadedFiles,
+        setExtractedStyle,
+        setDeckContent,
+        setCurrentDeck
+    } = useStudio();
     const [briefText, setBriefText] = useState('');
 
+    // Helper function to reset all wizard states
+    const resetWizardStates = () => {
+        setUploadedFiles([]);
+        setExtractedStyle(null);
+        setDeckContent({
+            audience: '',
+            brief: '',
+            financialData: [],
+            researchOptions: [],
+        });
+        setCurrentDeck(null);
+    };
+
     const handleFromReference = () => {
+        resetWizardStates();
         setWizardStep(1);
         setCurrentView('wizard');
     };
 
     const handleFromBrief = () => {
+        resetWizardStates();
         setWizardStep(3);
         setCurrentView('wizard');
     };
 
     const handleFromTemplate = () => {
+        resetWizardStates();
         setWizardStep(1);
         setCurrentView('wizard');
     };
@@ -315,10 +338,7 @@ function CreateNewSection() {
                                     key={template.id}
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={() => {
-                                        setWizardStep(1);
-                                        setCurrentView('wizard');
-                                    }}
+                                    onClick={handleFromTemplate}
                                     className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 hover:bg-primary/10 text-sm font-medium hover:text-primary transition-all duration-200 border border-transparent hover:border-primary/20"
                                 >
                                     <TemplateIcon className="w-4 h-4" />
@@ -344,10 +364,32 @@ interface SheetPresentation {
 }
 
 export default function Dashboard() {
-    const { setCurrentView, setCurrentDeck } = useStudio();
+    const { 
+        setCurrentView, 
+        setCurrentDeck,
+        setWizardStep,
+        setUploadedFiles,
+        setExtractedStyle,
+        setDeckContent
+    } = useStudio();
     const [searchQuery, setSearchQuery] = useState('');
     const [presentations, setPresentations] = useState<SheetPresentation[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+
+    // Helper function to reset all wizard states
+    const resetWizardAndNavigate = () => {
+        setUploadedFiles([]);
+        setExtractedStyle(null);
+        setDeckContent({
+            audience: '',
+            brief: '',
+            financialData: [],
+            researchOptions: [],
+        });
+        setCurrentDeck(null);
+        setWizardStep(1);
+        setCurrentView('wizard');
+    };
 
     const fetchPresentations = async () => {
         setIsLoading(true);
@@ -487,9 +529,7 @@ export default function Dashboard() {
                         <div className="flex items-center gap-3">
                                             
                             <Button
-                                onClick={() => {
-                                    setCurrentView('wizard');
-                                }}
+                                onClick={resetWizardAndNavigate}
                                 className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/25"
                             >
                                 <Plus className="w-4 h-4" />

@@ -834,6 +834,40 @@ export default function EditorWorkspace() {
                         </div>
 
                         <div className="flex items-center gap-2">
+                            {/* Show PowerPoint buttons if exportUrl exists */}
+                            {currentDeck.exportUrl && (
+                                <>
+                                    <Button
+                                        variant="default"
+                                        size="sm"
+                                        className="gap-2"
+                                        onClick={() => {
+                                            const powerPointProtocol = `ms-powerpoint:ofv|u|${currentDeck.exportUrl}`;
+                                            window.location.href = powerPointProtocol;
+                                        }}
+                                    >
+                                        <Presentation className="w-4 h-4" />
+                                        Open in PowerPoint
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="gap-2"
+                                        onClick={() => {
+                                            const link = document.createElement('a');
+                                            link.href = currentDeck.exportUrl!;
+                                            link.download = `${currentDeck.name}.pptx`;
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
+                                        }}
+                                    >
+                                        <Download className="w-4 h-4" />
+                                        Download
+                                    </Button>
+                                    <Separator orientation="vertical" className="h-6" />
+                                </>
+                            )}
                             <Button variant="outline" size="sm" className="gap-2" onClick={() => openComingSoon('Edit text')}>
                                 <Edit3 className="w-4 h-4" />
                                 Edit
