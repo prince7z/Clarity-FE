@@ -1,73 +1,106 @@
-# Welcome to your Lovable project
+# Clarity-FE
 
-## Project info
+---
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## 🗃️ Project Overview
 
-## How can I edit this code?
+**Clarity-FE** is an industrial-grade deck generator developed at **Swafinix Technologies** during an internship. It automates professional presentation creation for industry users, streamlining workflows with deep market research and advanced AI structuring.
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+## ⚙️ Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- 📄 **Automated Deck Generation:** Industrial decks produced with minimal user input.
+- 🎯 **Market Research Integration:** Real-time market data enhances each presentation.
+- 🛠️ **AI-driven Structuring:** Deck content is deeply contextual to the business problem.
+- 📝 **User Query Understanding:** Intelligent parsing leads to refined, accurate decks.
+- 🖼️ **Template and Slide Editing:** Preview, rearrange, and customize slides before export.
+- 📤 **Multi-format Export:** Download as PDF or PPTX for easy sharing.
+- 🔗 **Seamless API Integrations:** Modular approach for extensibility.
+- 🔄 **Workflow Automation:** Smooth, reliable operations using workflow tools.
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## 🏗️ Tech Stack
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **Vite** — Frontend toolkit and build system
+- **React** — User interface library
+- **TypeScript** — Type-safe JavaScript for scalability
+- **Tailwind CSS** — Utility-first CSS framework
+- **shadcn-ui** — Accessible UI components
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+---
 
-Follow these steps:
+## 🧰 APIs & External Services
+
+- <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="18" /> **Gama:** Deck content generation engine, powering AI-created slides
+- <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/graphql/graphql-plain.svg" height="18" /> **Triva:** Market research and data feeds integration
+- <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg" height="18" /> **Gemini:** User query understanding, prompt refinement, and deck structuring
+- <img src="https://cdn.worldvectorlogo.com/logos/n8n-io-icon.svg" height="18" /> **n8n:** Automated end-to-end workflow orchestration
+
+---
+
+## 📁 Directory Structure
+
+```text
+Clarity-FE/
+├── public/             # Static assets, icons, and manifest
+├── src/
+│   ├── api/            # API and service integrators (Gama, Triva, Gemini, n8n)
+│   ├── assets/         # Images, SVGs, logos
+│   ├── components/     # Reusable React UI components
+│   ├── pages/          # Route and view-level components
+│   ├── styles/         # Tailwind and CSS config
+│   ├── utils/          # Helpers and shared utilities
+│   ├── App.tsx         # Main app component
+│   └── main.tsx        # Application entry file
+├── .gitignore
+├── index.html
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+---
+
+## 🚦 Getting Started
+
+### Prerequisites
+
+- Node.js (v16+)
+- npm
+
+### Installation
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+git clone https://github.com/prince7z/Clarity-FE.git
+cd Clarity-FE
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Visit [http://localhost:5173](http://localhost:5173) to view your application.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## 🏢 Organization
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Project built at **Swafinix Technologies** as part of an engineering internship.
 
-## What technologies are used for this project?
+---
 
-This project is built with:
+## 🤝 Contributing
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Contributions are welcome—fork the repo, submit a PR, and follow best practices for code style and commit messages.
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## 📄 License
 
-## Can I connect a custom domain to my Lovable project?
+This project was developed for Swafinix Technologies. License and usage rights may be subject to organization policies.
 
-Yes, you can!
+---
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 🙏 Acknowledgements
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Thanks to mentors and the Swafinix Technologies team for guidance and support.
